@@ -33,7 +33,7 @@ const initMap = () => {
   }
 
   const mapOptions = {
-    center: { lat: 41.234567, lng: 44.123456 }, // Default center
+    center: { lat: 41.72533845455064, lng: 44.77959291404671 }, // Default center (Google Maps API requires lat/lng format)
     zoom: 12,
     mapTypeId: google.maps.MapTypeId.ROADMAP,
     mapTypeControl: true,
@@ -46,8 +46,8 @@ const initMap = () => {
   // If user location is available, center the map on it
   if (locationStore.userLocation) {
     const userPosition = {
-      lat: locationStore.userLocation.lat,
-      lng: locationStore.userLocation.lng
+      lat: locationStore.userLocation.latitude,
+      lng: locationStore.userLocation.longitude
     };
     map.value.setCenter(userPosition);
     

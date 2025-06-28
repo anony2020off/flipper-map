@@ -24,8 +24,8 @@ export const useLocationStore = defineStore('location', () => {
       });
 
       userLocation.value = {
-        lat: position.coords.latitude,
-        lng: position.coords.longitude
+        latitude: position.coords.latitude,
+        longitude: position.coords.longitude
       };
     } catch (error) {
       locationError.value = `Error getting location: ${error.message}`;

@@ -94,16 +94,16 @@ export const useFileStore = defineStore('files', () => {
   const sortedByDistance = computed(() => {
     if (!locationStore.userLocation) return [...files.value];
     
-    const userLat = locationStore.userLocation.lat;
-    const userLng = locationStore.userLocation.lng;
+    const userLatitude = locationStore.userLocation.latitude;
+    const userLongitude = locationStore.userLocation.longitude;
     
     return [...files.value]
       .filter(file => file.latitude && file.longitude)
       .map(file => ({
         ...file,
         distance: locationStore.calculateDistance(
-          userLat, 
-          userLng, 
+          userLatitude, 
+          userLongitude, 
           file.latitude, 
           file.longitude
         )

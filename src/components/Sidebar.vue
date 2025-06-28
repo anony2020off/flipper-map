@@ -1,135 +1,168 @@
 <template>
-  <div class="sidebar fixed-width bg-white h-full overflow-y-auto flex flex-col shadow-lg">
+  <div class="sidebar fixed-width h-full overflow-y-auto flex flex-col shadow-lg">
     <!-- Header with logo and title -->
-    <div class="sidebar-header bg-gradient-to-r from-blue-600 to-indigo-700 text-white p-4">
-      <div class="flex items-center justify-between">
-        <div class="flex items-center gap-3">
-          <div class="logo-container bg-white p-2 rounded-lg shadow-md">
-            <i class="fas fa-map-marker-alt text-indigo-600 text-2xl"></i>
+    <div class="relative">
+      <div class="flex flex-col sm:flex-row sm:justify-around">
+        <div class="w-full">
+          <div class="flex items-center justify-between p-4 bg-gradient-to-r from-blue-600 to-indigo-700">
+            <div class="flex items-center gap-3">
+              <div class="flex items-center justify-center w-10 h-10 rounded-lg bg-white">
+                <i class="fas fa-map-marker-alt text-indigo-600 text-xl"></i>
+              </div>
+              <h1 class="text-xl font-bold text-white">SubGHz Map</h1>
+            </div>
+            <button @click="toggleTheme" class="p-2 text-white rounded-full hover:bg-white/10 transition-colors">
+              <i :class="['fas', isDarkTheme ? 'fa-sun' : 'fa-moon']"></i>
+            </button>
           </div>
-          <h1 class="text-xl font-bold">SubGHz Map</h1>
+          
+          <!-- Search box -->
+          <div class="px-4 py-3 border-b border-gray-100">
+            <div class="relative">
+              <span class="absolute inset-y-0 left-0 flex items-center pl-3">
+                <i class="fas fa-search text-gray-400"></i>
+              </span>
+              <input 
+                type="text" 
+                v-model="searchInput" 
+                @input="handleSearch"
+                placeholder="Search pins..." 
+                class="w-full py-2 pl-10 pr-4 text-gray-700 bg-white border rounded-md focus:border-indigo-400 focus:outline-none focus:ring focus:ring-indigo-300 focus:ring-opacity-40"
+              />
+            </div>
+          </div>
+          
+          <!-- File type filters -->
+          <div class="px-4 py-3 border-b border-gray-100">
+            <h2 class="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-3">Filter by type</h2>
+            <div class="flex flex-wrap gap-2">
+              <button 
+                @click="toggleFilter('subghz')" 
+                :class="['flex items-center gap-1 px-3 py-1.5 rounded-md text-sm transition-colors', 
+                        activeFilters.includes('subghz') ? 'bg-indigo-100 text-indigo-700' : 'bg-gray-100 text-gray-700 hover:bg-gray-200']">
+                <i class="fas fa-broadcast-tower"></i>
+                <span>SubGHz</span>
+                <span class="ml-1 bg-gray-200 text-gray-700 px-1.5 py-0.5 rounded-full text-xs">
+                  {{ getFilterCount('subghz') }}
+                </span>
+              </button>
+              
+              <button 
+                @click="toggleFilter('rfid')" 
+                :class="['flex items-center gap-1 px-3 py-1.5 rounded-md text-sm transition-colors', 
+                        activeFilters.includes('rfid') ? 'bg-indigo-100 text-indigo-700' : 'bg-gray-100 text-gray-700 hover:bg-gray-200']">
+                <i class="fas fa-id-card"></i>
+                <span>RFID</span>
+                <span class="ml-1 bg-gray-200 text-gray-700 px-1.5 py-0.5 rounded-full text-xs">
+                  {{ getFilterCount('rfid') }}
+                </span>
+              </button>
+              
+              <button 
+                @click="toggleFilter('nfc')" 
+                :class="['flex items-center gap-1 px-3 py-1.5 rounded-md text-sm transition-colors', 
+                        activeFilters.includes('nfc') ? 'bg-indigo-100 text-indigo-700' : 'bg-gray-100 text-gray-700 hover:bg-gray-200']">
+                <i class="fas fa-wifi"></i>
+                <span>NFC</span>
+                <span class="ml-1 bg-gray-200 text-gray-700 px-1.5 py-0.5 rounded-full text-xs">
+                  {{ getFilterCount('nfc') }}
+                </span>
+              </button>
+            </div>
+          </div>
         </div>
-        <button @click="toggleTheme" class="theme-toggle p-2 rounded-full hover:bg-white/10 transition-colors">
-          <i :class="['fas', isDarkTheme ? 'fa-sun' : 'fa-moon']"></i>
-        </button>
-      </div>
-    </div>
-    
-    <!-- Search box -->
-    <div class="p-4">
-      <div class="relative">
-        <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
-        <input 
-          type="text" 
-          v-model="searchInput" 
-          @input="handleSearch"
-          placeholder="Search pins..." 
-          class="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
-        />
-      </div>
-    </div>
-    
-    <!-- File type filters -->
-    <div class="px-4 pb-4">
-      <h2 class="text-sm uppercase tracking-wider text-gray-500 font-semibold mb-2">Filter by type</h2>
-      <div class="flex flex-wrap gap-2">
-        <button 
-          @click="toggleFilter('subghz')" 
-          :class="['px-3 py-1.5 rounded-full text-sm font-medium transition-all', 
-                  isFilterActive('subghz') ? 'bg-orange-500 text-white shadow-md' : 'bg-gray-100 text-gray-700 hover:bg-gray-200']"
-        >
-          <i class="fas fa-broadcast-tower mr-1"></i> SubGHz
-        </button>
-        <button 
-          @click="toggleFilter('rfid')" 
-          :class="['px-3 py-1.5 rounded-full text-sm font-medium transition-all', 
-                  isFilterActive('rfid') ? 'bg-blue-500 text-white shadow-md' : 'bg-gray-100 text-gray-700 hover:bg-gray-200']"
-        >
-          <i class="fas fa-id-card mr-1"></i> RFID
-        </button>
-        <button 
-          @click="toggleFilter('nfc')" 
-          :class="['px-3 py-1.5 rounded-full text-sm font-medium transition-all', 
-                  isFilterActive('nfc') ? 'bg-green-500 text-white shadow-md' : 'bg-gray-100 text-gray-700 hover:bg-gray-200']"
-        >
-          <i class="fas fa-wifi mr-1"></i> NFC
-        </button>
       </div>
     </div>
     
     <!-- User location info -->
-    <div class="mx-4 mb-4 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-100">
-      <h2 class="text-sm uppercase tracking-wider text-blue-700 font-semibold mb-2 flex items-center">
-        <i class="fas fa-location-dot mr-2"></i> Your Location
-      </h2>
+    <div class="px-4 py-3 border-b border-gray-100">
+      <div class="flex items-center justify-between mb-2">
+        <h2 class="text-xs font-semibold text-gray-600 uppercase tracking-wide">Your Location</h2>
+        <span class="flex items-center justify-center w-6 h-6 rounded-full bg-blue-100 text-blue-600">
+          <i class="fas fa-location-dot text-xs"></i>
+        </span>
+      </div>
+      
       <template v-if="locationStore.userLocation">
-        <div class="grid grid-cols-2 gap-1">
-          <div class="text-sm font-medium text-gray-500">Latitude:</div>
-          <div class="text-sm font-mono">{{ locationStore.userLocation.lat.toFixed(6) }}</div>
-          <div class="text-sm font-medium text-gray-500">Longitude:</div>
-          <div class="text-sm font-mono">{{ locationStore.userLocation.lng.toFixed(6) }}</div>
+        <div class="mt-2 p-3 bg-white border border-gray-200 rounded-md shadow-sm">
+          <div class="grid grid-cols-2 gap-2">
+            <div class="text-xs font-medium text-gray-500">Latitude:</div>
+            <div class="text-xs font-mono text-gray-800">{{ locationStore.userLocation.latitude.toFixed(6) }}</div>
+            <div class="text-xs font-medium text-gray-500">Longitude:</div>
+            <div class="text-xs font-mono text-gray-800">{{ locationStore.userLocation.longitude.toFixed(6) }}</div>
+          </div>
         </div>
       </template>
-      <p v-else-if="locationStore.locationError" class="text-red-500 text-sm">
+      <p v-else-if="locationStore.locationError" class="mt-2 p-3 bg-red-50 border border-red-200 rounded-md text-red-600 text-xs">
         <i class="fas fa-exclamation-triangle mr-1"></i> {{ locationStore.locationError }}
       </p>
-      <p v-else class="text-gray-500 text-sm flex items-center">
+      <p v-else class="mt-2 p-3 bg-blue-50 border border-blue-200 rounded-md text-blue-600 text-xs flex items-center">
         <i class="fas fa-spinner fa-spin mr-2"></i> Getting your location...
       </p>
     </div>
     
     <!-- Pins list -->
-    <div class="flex-grow overflow-y-auto px-4 pb-4">
-      <h2 class="text-sm uppercase tracking-wider text-gray-500 font-semibold mb-2 flex items-center">
-        <i class="fas fa-map-pin mr-2"></i> Nearby Pins
-        <span class="ml-2 bg-gray-200 text-gray-700 text-xs px-2 py-0.5 rounded-full">
-          {{ filteredPins.length }}
-        </span>
-      </h2>
-      
-      <div v-if="filteredPins.length === 0" class="text-gray-500 text-center py-8">
-        <i class="fas fa-search text-gray-300 text-4xl mb-2"></i>
-        <p>No pins found</p>
+    <div class="flex-grow overflow-y-auto">
+      <div class="px-4 py-3 border-b border-gray-100">
+        <div class="flex items-center justify-between mb-2">
+          <h2 class="text-xs font-semibold text-gray-600 uppercase tracking-wide">Nearby Pins</h2>
+          <span class="flex items-center justify-center px-2 py-0.5 rounded-full bg-gray-100 text-gray-600 text-xs">
+            {{ filteredPins.length }}
+          </span>
+        </div>
       </div>
       
-      <div v-else class="space-y-4">
+      <div v-if="filteredPins.length === 0" class="flex flex-col items-center justify-center py-8 px-4">
+        <div class="flex items-center justify-center w-12 h-12 rounded-full bg-gray-100 mb-3">
+          <i class="fas fa-search text-gray-400"></i>
+        </div>
+        <p class="text-sm text-gray-500">No pins found</p>
+      </div>
+      
+      <div v-else class="divide-y divide-gray-100">
         <!-- Group pins by directory -->
         <div 
           v-for="(group, directory) in groupedPins" 
           :key="directory"
-          class="directory-group"
+          class="directory-group py-2"
         >
-          <div class="directory-header flex items-center gap-2 py-2 px-2 bg-gray-50 rounded-lg mb-2">
-            <i class="fas fa-folder text-yellow-500"></i>
-            <span class="text-sm font-medium text-gray-700 truncate">{{ formatDirectory(directory) }}</span>
-            <span class="ml-auto bg-gray-200 text-gray-700 text-xs px-2 py-0.5 rounded-full">
+          <div class="px-4 py-2 flex items-center justify-between">
+            <div class="flex items-center">
+              <span class="flex items-center justify-center w-6 h-6 rounded-full bg-yellow-100 text-yellow-500 mr-2">
+                <i class="fas fa-folder text-xs"></i>
+              </span>
+              <h3 class="text-sm font-medium text-gray-700 truncate">{{ formatDirectory(directory) }}</h3>
+            </div>
+            <span class="flex items-center justify-center px-2 py-0.5 rounded-full bg-gray-100 text-gray-600 text-xs">
               {{ group.length }}
             </span>
           </div>
           
-          <div class="space-y-2">
+          <div class="space-y-0 divide-y divide-gray-50">
             <div 
               v-for="pin in group" 
               :key="pin.path"
-              class="pin-card p-3 bg-white rounded-lg border border-gray-100 shadow-sm hover:shadow-md transition-all cursor-pointer"
+              class="pin-card px-4 py-3 hover:bg-gray-50 transition-colors cursor-pointer"
               :class="{'selected-pin': selectedPin && selectedPin.path === pin.path}"
               @click="selectPin(pin)"
             >
-              <div class="flex items-center gap-3">
+              <div class="flex items-center space-x-3">
                 <div 
-                  class="pin-icon flex items-center justify-center rounded-full w-10 h-10 shadow-sm"
+                  class="flex-shrink-0 flex items-center justify-center w-10 h-10 rounded-full shadow-sm"
                   :style="{ backgroundColor: fileStore.getFileColor(pin.type) }"
                 >
                   <i :class="['fas', `fa-${fileStore.getFileIcon(pin.type)}`, 'text-white']"></i>
                 </div>
-                <div class="flex-grow min-w-0">
-                  <h3 class="font-medium text-gray-800 truncate">{{ pin.name }}</h3>
-                  <p v-if="pin.distance" class="text-sm text-gray-500 flex items-center">
+                <div class="flex-1 min-w-0">
+                  <p class="text-sm font-medium text-gray-800 truncate">{{ pin.name }}</p>
+                  <p v-if="pin.distance" class="text-xs text-gray-500 flex items-center mt-1">
                     <i class="fas fa-route mr-1 text-xs"></i>
                     {{ pin.distance.toFixed(2) }} km away
                   </p>
                 </div>
-                <i class="fas fa-chevron-right text-gray-300"></i>
+                <div class="flex-shrink-0">
+                  <i class="fas fa-chevron-right text-gray-300"></i>
+                </div>
               </div>
             </div>
           </div>
@@ -216,6 +249,11 @@ const formatDirectory = (directory) => {
   return formatted.replace(/\//g, ' > ');
 };
 
+// Count pins for each file type
+const getFilterCount = (fileType) => {
+  return props.pins.filter(pin => pin.type === fileType).length;
+};
+
 // Select a pin
 const selectPin = (pin) => {
   selectedPin.value = pin;
@@ -242,64 +280,58 @@ onMounted(() => {
 
 // Watch for changes in searchQuery prop
 watch(() => props.searchQuery, (newValue) => {
-  searchInput.value = newValue;
+searchInput.value = newValue;
 });
 </script>
 
-<style scoped>
+<style>
 /* Add Font Awesome for icons */
 @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css');
 
 .sidebar {
-  width: 320px; /* Fixed width */
-  min-width: 320px; /* Prevent shrinking */
-  max-width: 320px; /* Prevent expanding */
-  border-right: 1px solid #e5e7eb;
-  box-shadow: 0 0 15px rgba(0, 0, 0, 0.05);
+width: 320px; /* Fixed width */
+min-width: 320px; /* Prevent shrinking */
+max-width: 320px; /* Prevent expanding */
+border-right: 1px solid #e5e7eb;
+box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+z-index: 10;
+background-color: #ffffff;
   z-index: 10;
+  background-color: #ffffff;
 }
 
 .fixed-width {
-  flex-shrink: 0; /* Prevent sidebar from shrinking */
+  width: 320px;
 }
 
 .selected-pin {
   border-left: 3px solid #4f46e5;
-  background-color: #f9fafb;
-  box-shadow: 0 2px 8px rgba(79, 70, 229, 0.15) !important;
-  transform: translateY(-1px);
+  background-color: #f9fafb !important;
 }
 
-/* Smooth transitions */
+/* Meraki UI style pin card */
 .pin-card {
   transition: all 0.2s ease;
   position: relative;
-  overflow: hidden;
 }
 
 .pin-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  background-color: #f9fafb;
 }
 
-.pin-card::after {
+.pin-card.selected-pin::before {
   content: '';
   position: absolute;
   left: 0;
   top: 0;
-  width: 4px;
-  height: 0;
-  background: linear-gradient(to bottom, #4f46e5, #818cf8);
-  transition: height 0.3s ease;
-}
-
-.pin-card:hover::after {
+  width: 3px;
   height: 100%;
+  background: #4f46e5;
 }
 
 /* Custom scrollbar */
 .sidebar::-webkit-scrollbar {
-  width: 6px;
+  width: 4px;
 }
 
 .sidebar::-webkit-scrollbar-track {
@@ -307,12 +339,79 @@ watch(() => props.searchQuery, (newValue) => {
 }
 
 .sidebar::-webkit-scrollbar-thumb {
-  background: #c5c7d0;
-  border-radius: 3px;
+  background: #cbd5e1;
+  border-radius: 2px;
 }
 
 .sidebar::-webkit-scrollbar-thumb:hover {
-  background: #a0a0a0;
+  background: #94a3b8;
+}
+
+/* Dark theme styles */
+.dark-theme .sidebar {
+  background-color: #1e293b;
+  border-right-color: #334155;
+}
+
+.dark-theme .border-gray-100 {
+  border-color: #334155;
+}
+
+.dark-theme .bg-white {
+  background-color: #1e293b;
+}
+
+.dark-theme .text-gray-600,
+.dark-theme .text-gray-700,
+.dark-theme .text-gray-800 {
+  color: #e2e8f0;
+}
+
+.dark-theme .text-gray-500 {
+  color: #94a3b8;
+}
+
+.dark-theme .text-gray-400 {
+  color: #64748b;
+}
+
+.dark-theme .bg-gray-50,
+.dark-theme .bg-gray-100 {
+  background-color: #334155;
+}
+
+.dark-theme .text-gray-300 {
+  color: #475569;
+}
+
+.dark-theme .border {
+  border-color: #334155;
+}
+
+.dark-theme .pin-card:hover {
+  background-color: #334155;
+}
+
+.dark-theme .selected-pin {
+  background-color: #334155 !important;
+}
+
+.dark-theme input {
+  background-color: #1e293b;
+  border-color: #334155;
+  color: #e2e8f0;
+}
+
+.dark-theme .sidebar::-webkit-scrollbar-track {
+  background: #1e293b;
+}
+
+.dark-theme .sidebar::-webkit-scrollbar-thumb {
+  background: #475569;
+}
+
+.dark-theme .sidebar::-webkit-scrollbar-thumb:hover {
+  background: #64748b;
 }
 
 /* Animation for loading spinner */
