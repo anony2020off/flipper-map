@@ -1,170 +1,165 @@
 <template>
-  <div class="sidebar fixed-width h-full overflow-y-auto flex flex-col shadow-lg">
+  <div class="sidebar overflow-auto d-flex flex-column shadow h-100" style="width: 320px; min-width: 320px; max-width: 320px;">
     <!-- Header with logo and title -->
-    <div class="relative">
-      <div class="flex flex-col sm:flex-row sm:justify-around">
-        <div class="w-full">
-          <div class="flex items-center justify-between p-4 bg-gradient-to-r from-blue-600 to-indigo-700">
-            <div class="flex items-center gap-3">
-              <div class="flex items-center justify-center w-10 h-10 rounded-lg bg-white">
-                <i class="fas fa-map-marker-alt text-indigo-600 text-xl"></i>
-              </div>
-              <h1 class="text-xl font-bold text-white">SubGHz Map</h1>
-            </div>
-            <button @click="toggleTheme" class="p-2 text-white rounded-full hover:bg-white/10 transition-colors">
-              <i :class="['fas', isDarkTheme ? 'fa-sun' : 'fa-moon']"></i>
-            </button>
-          </div>
-          
-          <!-- Search box -->
-          <div class="px-4 py-3 border-b border-gray-100">
-            <div class="relative">
-              <span class="absolute inset-y-0 left-0 flex items-center pl-3">
-                <i class="fas fa-search text-gray-400"></i>
-              </span>
-              <input 
-                type="text" 
-                v-model="searchInput" 
-                @input="handleSearch"
-                placeholder="Search pins..." 
-                class="w-full py-2 pl-10 pr-4 text-gray-700 bg-white border rounded-md focus:border-indigo-400 focus:outline-none focus:ring focus:ring-indigo-300 focus:ring-opacity-40"
-              />
-            </div>
-          </div>
-          
-          <!-- File type filters -->
-          <div class="px-4 py-3 border-b border-gray-100">
-            <h2 class="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-3">Filter by type</h2>
-            <div class="flex flex-wrap gap-2">
-              <button 
-                @click="toggleFilter('subghz')" 
-                :class="['flex items-center gap-1 px-3 py-1.5 rounded-md text-sm transition-colors', 
-                        activeFilters.includes('subghz') ? 'bg-indigo-100 text-indigo-700' : 'bg-gray-100 text-gray-700 hover:bg-gray-200']">
-                <i class="fas fa-broadcast-tower"></i>
-                <span>SubGHz</span>
-                <span class="ml-1 bg-gray-200 text-gray-700 px-1.5 py-0.5 rounded-full text-xs">
-                  {{ getFilterCount('subghz') }}
-                </span>
-              </button>
-              
-              <button 
-                @click="toggleFilter('rfid')" 
-                :class="['flex items-center gap-1 px-3 py-1.5 rounded-md text-sm transition-colors', 
-                        activeFilters.includes('rfid') ? 'bg-indigo-100 text-indigo-700' : 'bg-gray-100 text-gray-700 hover:bg-gray-200']">
-                <i class="fas fa-id-card"></i>
-                <span>RFID</span>
-                <span class="ml-1 bg-gray-200 text-gray-700 px-1.5 py-0.5 rounded-full text-xs">
-                  {{ getFilterCount('rfid') }}
-                </span>
-              </button>
-              
-              <button 
-                @click="toggleFilter('nfc')" 
-                :class="['flex items-center gap-1 px-3 py-1.5 rounded-md text-sm transition-colors', 
-                        activeFilters.includes('nfc') ? 'bg-indigo-100 text-indigo-700' : 'bg-gray-100 text-gray-700 hover:bg-gray-200']">
-                <i class="fas fa-wifi"></i>
-                <span>NFC</span>
-                <span class="ml-1 bg-gray-200 text-gray-700 px-1.5 py-0.5 rounded-full text-xs">
-                  {{ getFilterCount('nfc') }}
-                </span>
-              </button>
-            </div>
-          </div>
+    <div class="bg-primary bg-gradient text-white p-3 d-flex justify-content-between align-items-center">
+      <div class="d-flex align-items-center gap-2">
+        <div class="d-flex align-items-center justify-content-center bg-white rounded p-2" style="width: 40px; height: 40px;">
+          <i class="fas fa-map-marker-alt text-primary fs-5"></i>
         </div>
+        <h1 class="fs-5 fw-bold mb-0">SubGHz Map</h1>
+      </div>
+      <button @click="toggleTheme" class="btn btn-sm btn-outline-light rounded-circle">
+        <i :class="['fas', isDarkTheme ? 'fa-sun' : 'fa-moon']"></i>
+      </button>
+    </div>
+    
+    <!-- Search box -->
+    <div class="p-3 border-bottom">
+      <div class="position-relative">
+        <span class="position-absolute top-50 start-0 translate-middle-y ms-3">
+          <i class="fas fa-search text-muted"></i>
+        </span>
+        <input 
+          type="text" 
+          v-model="searchInput" 
+          @input="handleSearch"
+          placeholder="Search pins..." 
+          class="form-control ps-5"
+        />
+      </div>
+    </div>
+    
+    <!-- File type filters -->
+    <div class="p-3 border-bottom">
+      <h6 class="text-uppercase fw-semibold text-muted small mb-3">Filter by type</h6>
+      <div class="d-flex flex-wrap gap-2">
+        <button 
+          @click="toggleFilter('subghz')" 
+          :class="['btn btn-sm d-flex align-items-center gap-1', 
+                  activeFilters.includes('subghz') ? 'btn-primary' : 'btn-outline-secondary']">
+          <i class="fas fa-broadcast-tower"></i>
+          <span>SubGHz</span>
+          <span class="ms-1 badge bg-secondary rounded-pill">
+            {{ getFilterCount('subghz') }}
+          </span>
+        </button>
+        
+        <button 
+          @click="toggleFilter('rfid')" 
+          :class="['btn btn-sm d-flex align-items-center gap-1', 
+                  activeFilters.includes('rfid') ? 'btn-primary' : 'btn-outline-secondary']">
+          <i class="fas fa-id-card"></i>
+          <span>RFID</span>
+          <span class="ms-1 badge bg-secondary rounded-pill">
+            {{ getFilterCount('rfid') }}
+          </span>
+        </button>
+        
+        <button 
+          @click="toggleFilter('nfc')" 
+          :class="['btn btn-sm d-flex align-items-center gap-1', 
+                  activeFilters.includes('nfc') ? 'btn-primary' : 'btn-outline-secondary']">
+          <i class="fas fa-wifi"></i>
+          <span>NFC</span>
+          <span class="ms-1 badge bg-secondary rounded-pill">
+            {{ getFilterCount('nfc') }}
+          </span>
+        </button>
       </div>
     </div>
     
     <!-- User location info -->
-    <div class="px-4 py-3 border-b border-gray-100">
-      <div class="flex items-center justify-between mb-2">
-        <h2 class="text-xs font-semibold text-gray-600 uppercase tracking-wide">Your Location</h2>
-        <span class="flex items-center justify-center w-6 h-6 rounded-full bg-blue-100 text-blue-600">
-          <i class="fas fa-location-dot text-xs"></i>
+    <div class="p-3 border-bottom">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <h6 class="text-uppercase fw-semibold text-muted small mb-0">Your Location</h6>
+        <span class="d-flex align-items-center justify-content-center bg-primary bg-opacity-10 rounded-circle" style="width: 24px; height: 24px;">
+          <i class="fas fa-location-dot text-primary small"></i>
         </span>
       </div>
       
       <template v-if="locationStore.userLocation">
-        <div class="mt-2 p-3 bg-white border border-gray-200 rounded-md shadow-sm">
-          <div class="grid grid-cols-2 gap-2">
-            <div class="text-xs font-medium text-gray-500">Latitude:</div>
-            <div class="text-xs font-mono text-gray-800">{{ locationStore.userLocation.latitude.toFixed(6) }}</div>
-            <div class="text-xs font-medium text-gray-500">Longitude:</div>
-            <div class="text-xs font-mono text-gray-800">{{ locationStore.userLocation.longitude.toFixed(6) }}</div>
+        <div class="mt-2 p-3 bg-light border rounded shadow-sm">
+          <div class="row g-2">
+            <div class="col-5 text-muted small fw-medium">Latitude:</div>
+            <div class="col-7 small font-monospace">{{ locationStore.userLocation.latitude.toFixed(6) }}</div>
+            <div class="col-5 text-muted small fw-medium">Longitude:</div>
+            <div class="col-7 small font-monospace">{{ locationStore.userLocation.longitude.toFixed(6) }}</div>
           </div>
         </div>
       </template>
-      <p v-else-if="locationStore.locationError" class="mt-2 p-3 bg-red-50 border border-red-200 rounded-md text-red-600 text-xs">
-        <i class="fas fa-exclamation-triangle mr-1"></i> {{ locationStore.locationError }}
-      </p>
-      <p v-else class="mt-2 p-3 bg-blue-50 border border-blue-200 rounded-md text-blue-600 text-xs flex items-center">
-        <i class="fas fa-spinner fa-spin mr-2"></i> Getting your location...
-      </p>
+      <div v-else-if="locationStore.locationError" class="mt-2 p-3 bg-danger bg-opacity-10 border border-danger border-opacity-25 rounded text-danger small">
+        <i class="fas fa-exclamation-triangle me-1"></i> {{ locationStore.locationError }}
+      </div>
+      <div v-else class="mt-2 p-3 bg-primary bg-opacity-10 border border-primary border-opacity-25 rounded text-primary small d-flex align-items-center">
+        <i class="fas fa-spinner fa-spin me-2"></i> Getting your location...
+      </div>
     </div>
     
     <!-- Pins list -->
-    <div class="flex-grow overflow-y-auto">
-      <div class="px-4 py-3 border-b border-gray-100">
-        <div class="flex items-center justify-between mb-2">
-          <h2 class="text-xs font-semibold text-gray-600 uppercase tracking-wide">Nearby Pins</h2>
-          <span class="flex items-center justify-center px-2 py-0.5 rounded-full bg-gray-100 text-gray-600 text-xs">
+    <div class="flex-grow-1 overflow-auto">
+      <div class="p-3 border-bottom">
+        <div class="d-flex justify-content-between align-items-center">
+          <h6 class="text-uppercase fw-semibold text-muted small mb-0">Nearby Pins</h6>
+          <span class="badge bg-secondary rounded-pill">
             {{ filteredPins.length }}
           </span>
         </div>
       </div>
       
-      <div v-if="filteredPins.length === 0" class="flex flex-col items-center justify-center py-8 px-4">
-        <div class="flex items-center justify-center w-12 h-12 rounded-full bg-gray-100 mb-3">
-          <i class="fas fa-search text-gray-400"></i>
+      <div v-if="filteredPins.length === 0" class="d-flex flex-column align-items-center justify-content-center py-5">
+        <div class="d-flex align-items-center justify-content-center bg-light rounded-circle mb-3" style="width: 48px; height: 48px;">
+          <i class="fas fa-search text-muted"></i>
         </div>
-        <p class="text-sm text-gray-500">No pins found</p>
+        <p class="text-muted small">No pins found</p>
       </div>
       
-      <div v-else class="divide-y divide-gray-100">
+      <div v-else class="list-group list-group-flush">
         <!-- Group pins by directory -->
         <div 
           v-for="(group, directory) in groupedPins" 
           :key="directory"
-          class="directory-group py-2"
+          class="directory-group"
         >
-          <div class="px-4 py-2 flex items-center justify-between">
-            <div class="flex items-center">
-              <span class="flex items-center justify-center w-6 h-6 rounded-full bg-yellow-100 text-yellow-500 mr-2">
-                <i class="fas fa-folder text-xs"></i>
+          <div class="p-3 bg-light bg-opacity-50 d-flex justify-content-between align-items-center">
+            <div class="d-flex align-items-center">
+              <span class="d-flex align-items-center justify-content-center bg-warning bg-opacity-10 rounded-circle me-2" style="width: 24px; height: 24px;">
+                <i class="fas fa-folder text-warning small"></i>
               </span>
-              <h3 class="text-sm font-medium text-gray-700 truncate">{{ formatDirectory(directory) }}</h3>
+              <h6 class="small fw-medium text-truncate mb-0">{{ formatDirectory(directory) }}</h6>
             </div>
-            <span class="flex items-center justify-center px-2 py-0.5 rounded-full bg-gray-100 text-gray-600 text-xs">
+            <span class="badge bg-secondary rounded-pill">
               {{ group.length }}
             </span>
           </div>
           
-          <div class="space-y-0 divide-y divide-gray-50">
-            <div 
+          <div class="list-group list-group-flush">
+            <a 
               v-for="pin in group" 
               :key="pin.path"
-              class="pin-card px-4 py-3 hover:bg-gray-50 transition-colors cursor-pointer"
-              :class="{'selected-pin': selectedPin && selectedPin.path === pin.path}"
-              @click="selectPin(pin)"
+              href="#"
+              class="list-group-item list-group-item-action px-3 py-3"
+              :class="{'active': selectedPin && selectedPin.path === pin.path}"
+              @click.prevent="selectPin(pin)"
             >
-              <div class="flex items-center space-x-3">
+              <div class="d-flex align-items-center gap-3">
                 <div 
-                  class="flex-shrink-0 flex items-center justify-center w-10 h-10 rounded-full shadow-sm"
-                  :style="{ backgroundColor: fileStore.getFileColor(pin.type) }"
+                  class="d-flex align-items-center justify-content-center rounded-circle shadow-sm" 
+                  :style="{ backgroundColor: fileStore.getFileColor(pin.type), width: '40px', height: '40px' }"
                 >
                   <i :class="['fas', `fa-${fileStore.getFileIcon(pin.type)}`, 'text-white']"></i>
                 </div>
-                <div class="flex-1 min-w-0">
-                  <p class="text-sm font-medium text-gray-800 truncate">{{ pin.name }}</p>
-                  <p v-if="pin.distance" class="text-xs text-gray-500 flex items-center mt-1">
-                    <i class="fas fa-route mr-1 text-xs"></i>
+                <div class="flex-grow-1 min-width-0">
+                  <p class="mb-0 small fw-medium text-truncate">{{ pin.name }}</p>
+                  <p v-if="pin.distance" class="mb-0 text-muted smaller d-flex align-items-center mt-1">
+                    <i class="fas fa-route me-1 smaller"></i>
                     {{ pin.distance.toFixed(2) }} km away
                   </p>
                 </div>
-                <div class="flex-shrink-0">
-                  <i class="fas fa-chevron-right text-gray-300"></i>
+                <div>
+                  <i class="fas fa-chevron-right text-muted"></i>
                 </div>
               </div>
-            </div>
+            </a>
           </div>
         </div>
       </div>

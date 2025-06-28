@@ -1,6 +1,6 @@
 <template>
-  <div class="map-container w-full h-full">
-    <div id="map" class="w-full h-full"></div>
+  <div class="position-relative h-100 w-100">
+    <div id="map" class="h-100 w-100"></div>
   </div>
 </template>
 

@@ -55,14 +55,14 @@ const handlePinSelect = (pin) => {
 </script>
 
 <template>
-  <div class="app-container">
+  <div class="d-flex vh-100 vw-100 overflow-hidden">
     <Sidebar 
       :pins="filteredPins" 
       @search="handleSearch" 
       :searchQuery="searchQuery"
       @select-pin="handlePinSelect"
     />
-    <div class="map-container">
+    <div class="flex-grow-1 position-relative h-100">
       <MapView 
         :pins="filteredPins" 
         :selectedPin="selectedPin"
@@ -76,16 +76,5 @@ const handlePinSelect = (pin) => {
 </template>
 
 <style>
-.app-container {
-  display: flex;
-  height: 100vh;
-  width: 100vw;
-  overflow: hidden;
-}
-
-.map-container {
-  flex: 1;
-  position: relative;
-  height: 100%;
-}
+/* Custom styles can be added here if needed */
 </style>
