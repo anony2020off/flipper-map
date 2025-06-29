@@ -78,26 +78,39 @@ const addMarkers = () => {
   
   if (!map.value) return;
   
-  // Add new markers
-  markers.value = props.pins.map(pin => {
-    const position = { lat: pin.latitude, lng: pin.longitude };
-    const isSelected = props.selectedPin && props.selectedPin.path === pin.path;
-    
-    // Store marker properties for reference
-    const markerProps = {
-      isSelected,
-      pinType: pin.type,
-      hasOpenInfoWindow: false
-    };
-    
-    // Create marker with custom icon based on file type
-    const marker = new google.maps.Marker({
-      position,
-      map: map.value,
-      title: pin.name,
-      icon: getMarkerIcon(pin.type, isSelected),
-      animation: isSelected ? google.maps.Animation.BOUNCE : null,
-      zIndex: isSelected ? 1000 : 1 // Bring selected marker to front
+  // Add new markers only for pins with valid coordinates
+  markers.value = props.pins
+    .filter(pin => {
+      // Check if pin has valid coordinates
+      return pin.latitude !== undefined && 
+             pin.longitude !== undefined && 
+             pin.latitude !== null && 
+             pin.longitude !== null &&
+             !isNaN(pin.latitude) && 
+             !isNaN(pin.longitude);
+    })
+    .map(pin => {
+      const position = { 
+        lat: Number(pin.latitude), // Ensure numeric values
+        lng: Number(pin.longitude)
+      };
+      const isSelected = props.selectedPin && props.selectedPin.path === pin.path;
+      
+      // Store marker properties for reference
+      const markerProps = {
+        isSelected,
+        pinType: pin.type,
+        hasOpenInfoWindow: false
+      };
+      
+      // Create marker with custom icon based on file type
+      const marker = new google.maps.Marker({
+        position,
+        map: map.value,
+        title: pin.name,
+        icon: getMarkerIcon(pin.type, isSelected),
+        animation: isSelected ? google.maps.Animation.BOUNCE : null,
+        zIndex: isSelected ? 1000 : 1 // Bring selected marker to front
     });
     
     // Add click event to marker
@@ -351,14 +364,37 @@ const createInfoWindowContent = (pin) => {
   const fileTypeColor = fileStore.getFileColor(pin.type);
   const displayName = removeFileExtension(pin.name);
   
+  // Format coordinates safely
+  const formatCoordinates = () => {
+    if (pin.latitude !== undefined && 
+        pin.longitude !== undefined && 
+        pin.latitude !== null && 
+        pin.longitude !== null &&
+        !isNaN(pin.latitude) && 
+        !isNaN(pin.longitude)) {
+      return `${Number(pin.latitude).toFixed(6)}, ${Number(pin.longitude).toFixed(6)}`;
+    }
+    return 'Not available';
+  };
+  
+  // Format distance safely
+  const formatDistance = () => {
+    if (pin.distance !== undefined && pin.distance !== null && !isNaN(pin.distance)) {
+      return pin.distance < 1 ? 
+        `${(pin.distance * 1000).toFixed(0)} m` : 
+        `${pin.distance.toFixed(2)} km`;
+    }
+    return 'Unknown';
+  };
+  
   return `
     <div class="info-window">
       <div style="margin-bottom: 8px; border-bottom: 1px solid #eee; padding-bottom: 8px;"></div>
       <div style="font-size: 13px; color: #555;">
         <p style="margin: 4px 0;"><strong>Type:</strong> ${pin.type.toUpperCase()}</p>
         <p style="margin: 4px 0;"><strong>Directory:</strong> ${pin.directory || pin.path.split('/').slice(0, -1).pop() || 'Root'}</p>
-        <p style="margin: 4px 0;"><strong>Coordinates:</strong> ${pin.latitude.toFixed(6)}, ${pin.longitude.toFixed(6)}</p>
-        ${pin.distance ? `<p style="margin: 4px 0;"><strong>Distance:</strong> ${pin.distance < 1 ? `${(pin.distance * 1000).toFixed(0)} m` : `${pin.distance.toFixed(2)} km`}</p>` : ''}
+        <p style="margin: 4px 0;"><strong>Coordinates:</strong> ${formatCoordinates()}</p>
+        ${pin.distance ? `<p style="margin: 4px 0;"><strong>Distance:</strong> ${formatDistance()}</p>` : ''}
       </div>
     </div>
   `;
