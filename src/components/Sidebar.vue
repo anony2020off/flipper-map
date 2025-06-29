@@ -228,10 +228,27 @@ const selectPin = (pin) => {
 // Toggle between light and dark theme
 const toggleTheme = () => {
   isDarkTheme.value = !isDarkTheme.value;
-  document.documentElement.classList.toggle('dark-theme', isDarkTheme.value);
-  
-  // Save theme preference to localStorage
+  document.documentElement.setAttribute('data-bs-theme', isDarkTheme.value ? 'dark' : 'light');
   localStorage.setItem('subghz-map-theme', isDarkTheme.value ? 'dark' : 'light');
+};
+
+// Handle Flipper connection
+const handleFlipperConnection = async () => {
+  if (flipperStore.isConnected) {
+    // Disconnect if already connected
+    await flipperStore.disconnectFlipper();
+  } else {
+    // Connect to Flipper
+    try {
+      const success = await flipperStore.connectFlipper();
+      if (success) {
+        // Merge Flipper files with existing pins
+        console.log('Connected to Flipper, found files:', flipperStore.fileList);
+      }
+    } catch (error) {
+      console.error('Failed to connect to Flipper:', error);
+    }
+  }
 };
 
 // Initialize theme from localStorage on component mount
@@ -239,13 +256,13 @@ onMounted(() => {
   const savedTheme = localStorage.getItem('subghz-map-theme');
   if (savedTheme === 'dark') {
     isDarkTheme.value = true;
-    document.documentElement.classList.add('dark-theme');
+    document.documentElement.setAttribute('data-bs-theme', 'dark');
   }
 });
 
 // Watch for changes in searchQuery prop
 watch(() => props.searchQuery, (newValue) => {
-searchInput.value = newValue;
+  searchInput.value = newValue;
 });
 </script>
 
