@@ -1,4 +1,4 @@
-# SubGHz Map
+# Flipper Map
 
 A Vue.js application that displays Flipper Zero signal files on a Google Map. The application shows pins for different types of files (SubGHz, RFID, NFC) with their GPS coordinates.
 

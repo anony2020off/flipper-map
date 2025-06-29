@@ -119,25 +119,26 @@
           v-for="pin in filteredPins" 
           :key="pin.path"
           href="#"
-          class="list-group-item list-group-item-action px-3 py-3"
+          class="list-group-item list-group-item-action px-3 py-3 overflow-hidden"
           :class="{'active': selectedPin && selectedPin.path === pin.path}"
           @click.prevent="selectPin(pin)"
         >
-          <div class="d-flex align-items-center gap-3">
+          <div class="d-flex align-items-center">
             <div 
-              class="d-flex align-items-center justify-content-center rounded-circle shadow-sm" 
-              :style="{ backgroundColor: fileStore.getFileColor(pin.type), width: '40px', height: '40px' }"
+              class="d-flex align-items-center justify-content-center rounded-circle shadow-sm flex-shrink-0" 
+              style="width: 40px; height: 40px; min-width: 40px;"
+              :style="{ backgroundColor: fileStore.getFileColor(pin.type) }"
             >
               <i :class="['fas', `fa-${fileStore.getFileIcon(pin.type)}`, 'text-white']"></i>
             </div>
-            <div class="flex-grow-1 min-width-0">
-              <p class="mb-0 small fw-medium text-truncate">{{ pin.name }}</p>
-              <p v-if="pin.distance" class="mb-0 text-muted smaller d-flex align-items-center mt-1">
-                <i class="fas fa-route me-1 smaller"></i>
-                {{ pin.distance < 1 ? `${(pin.distance * 1000).toFixed(0)} m` : `${pin.distance.toFixed(2)} km` }} away
+            <div class="flex-grow-1 min-width-0 mx-3 overflow-hidden">
+              <p class="mb-0 small fw-medium text-truncate">{{ removeFileExtension(pin.name) }}</p>
+              <p v-if="pin.distance" class="mb-0 text-muted smaller d-flex align-items-center mt-1 text-truncate">
+                <i class="fas fa-route me-1 smaller flex-shrink-0"></i>
+                <span class="text-truncate">{{ pin.distance < 1 ? `${(pin.distance * 1000).toFixed(0)} m` : `${pin.distance.toFixed(2)} km` }} away</span>
               </p>
             </div>
-            <div>
+            <div class="flex-shrink-0">
               <i class="fas fa-chevron-right text-muted"></i>
             </div>
           </div>
@@ -203,6 +204,13 @@ const filteredPins = computed(() => {
 // Count pins for each file type
 const getFilterCount = (fileType) => {
   return props.pins.filter(pin => pin.type === fileType).length;
+};
+
+// Remove file extension from name (only from last dot)
+const removeFileExtension = (filename) => {
+  const lastDotIndex = filename.lastIndexOf('.');
+  if (lastDotIndex === -1) return filename; // No extension
+  return filename.substring(0, lastDotIndex);
 };
 
 // Select a pin

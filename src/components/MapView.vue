@@ -204,11 +204,19 @@ const getMarkerIcon = (fileType, isSelected = false) => {
   };
 };
 
+// Remove file extension from name (only from last dot)
+const removeFileExtension = (filename) => {
+  const lastDotIndex = filename.lastIndexOf('.');
+  if (lastDotIndex === -1) return filename; // No extension
+  return filename.substring(0, lastDotIndex);
+};
+
 // Create info window content for a pin
 const createInfoWindowContent = (pin) => {
   // Use the same icon function as the sidebar for consistency
   const iconName = fileStore.getFileIcon(pin.type);
   const fileTypeColor = fileStore.getFileColor(pin.type);
+  const displayName = removeFileExtension(pin.name);
   
   return `
     <div class="info-window">
@@ -216,7 +224,7 @@ const createInfoWindowContent = (pin) => {
         <div style="background-color: ${fileTypeColor}; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 10px;">
           <i class="fas fa-${iconName}" style="color: white; font-size: 14px;"></i>
         </div>
-        <h3 style="margin: 0; font-weight: 600; font-size: 16px;">${pin.name}</h3>
+        <h3 style="margin: 0; font-weight: 600; font-size: 16px;">${displayName}</h3>
       </div>
       <div style="font-size: 13px; color: #555;">
         <p style="margin: 4px 0;"><strong>Type:</strong> ${pin.type.toUpperCase()}</p>
