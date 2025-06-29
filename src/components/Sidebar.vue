@@ -1,5 +1,5 @@
 <template>
-  <div class="sidebar overflow-auto d-flex flex-column shadow h-100" style="width: 320px; min-width: 320px; max-width: 320px;">
+  <div class="sidebar overflow-auto d-flex flex-column shadow h-100" style="width: 360px; min-width: 360px; max-width: 360px;">
     <!-- Header with logo and title -->
     <div class="bg-primary bg-gradient text-white p-3 d-flex justify-content-between align-items-center">
       <div class="d-flex align-items-center gap-2">
@@ -38,7 +38,7 @@
           :class="['btn btn-sm d-flex align-items-center gap-1', 
                   activeFilters.includes('subghz') ? 'btn-primary' : 'btn-outline-secondary']">
           <i class="fas fa-broadcast-tower"></i>
-          <span>SubGHz</span>
+          <span>RF</span>
           <span class="ms-1 badge bg-secondary rounded-pill">
             {{ getFilterCount('subghz') }}
           </span>
@@ -252,7 +252,7 @@ background-color: #ffffff;
 }
 
 .fixed-width {
-  width: 320px;
+  width: 360px;
 }
 
 .selected-pin {
