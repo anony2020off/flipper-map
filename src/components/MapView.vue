@@ -94,10 +94,16 @@ const addMarkers = () => {
     });
     
     // Add click event to marker
+    const displayName = removeFileExtension(pin.name);
+    const iconName = fileStore.getFileIcon(pin.type);
+    const fileTypeColor = fileStore.getFileColor(pin.type);
+    
+    // Create info window with custom content
     const infoWindow = new google.maps.InfoWindow({
       content: createInfoWindowContent(pin),
       maxWidth: 300,
-      pixelOffset: new google.maps.Size(0, isSelected ? -5 : 0)
+      pixelOffset: new google.maps.Size(0, isSelected ? -5 : 0),
+      ariaLabel: displayName
     });
     
     // Track hover state
@@ -129,6 +135,58 @@ const addMarkers = () => {
       // Open this info window and store reference
       infoWindow.open(map.value, marker);
       currentInfoWindow = infoWindow;
+      
+      // Apply custom styling to the InfoWindow header after it's opened
+      setTimeout(() => {
+        const infoWindows = document.querySelectorAll('.gm-style-iw');
+        if (infoWindows.length > 0) {
+          const lastInfoWindow = infoWindows[infoWindows.length - 1];
+          
+          // Add custom title to the InfoWindow
+          // No need to find a specific container, we'll position it absolutely within the InfoWindow
+          {
+            // Check if we already added a title
+            const existingTitle = lastInfoWindow.querySelector('.custom-iw-title');
+            if (!existingTitle) {
+              const titleDiv = document.createElement('div');
+              titleDiv.className = 'custom-iw-title';
+              titleDiv.style.cssText = 'position: absolute; top: 4px; left: 15px; display: flex; align-items: center; margin-top: 8px; z-index: 10;';
+              
+              // Add icon
+              const iconDiv = document.createElement('div');
+              iconDiv.style.cssText = `background-color: ${fileTypeColor}; width: 24px; height: 24px; border-radius: 50%; 
+                                      display: flex; align-items: center; justify-content: center; margin-right: 8px; flex-shrink: 0;`;
+              
+              const icon = document.createElement('i');
+              icon.className = `fas fa-${iconName}`;
+              icon.style.cssText = 'color: white; font-size: 12px;';
+              
+              iconDiv.appendChild(icon);
+              titleDiv.appendChild(iconDiv);
+              
+              // Add title text
+              const titleText = document.createElement('span');
+              titleText.textContent = displayName;
+              titleText.style.cssText = 'font-weight: 600; font-size: 14px; color: #333; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px;';
+              
+              titleDiv.appendChild(titleText);
+              lastInfoWindow.appendChild(titleDiv);
+            }
+          }
+          
+          // Find the content container and adjust its padding
+          const contentContainer = lastInfoWindow.querySelector('.gm-style-iw-d');
+          if (contentContainer) {
+            contentContainer.style.paddingTop = '0';
+          }
+          
+          // Adjust the close button height
+          const closeButton = lastInfoWindow.querySelector('button.gm-ui-hover-effect');
+          if (closeButton) {
+            closeButton.style.height = '36px';
+          }
+        }
+      }, 100);
     });
     
     // If this is the selected pin, open its info window
@@ -136,6 +194,58 @@ const addMarkers = () => {
       setTimeout(() => {
         infoWindow.open(map.value, marker);
         currentInfoWindow = infoWindow;
+        
+        // Apply the same custom styling for the selected pin's InfoWindow
+        setTimeout(() => {
+          const infoWindows = document.querySelectorAll('.gm-style-iw');
+          if (infoWindows.length > 0) {
+            const lastInfoWindow = infoWindows[infoWindows.length - 1];
+            
+            // Add custom title to the InfoWindow
+            // No need to find a specific container, we'll position it absolutely within the InfoWindow
+            {
+              // Check if we already added a title
+              const existingTitle = lastInfoWindow.querySelector('.custom-iw-title');
+              if (!existingTitle) {
+                const titleDiv = document.createElement('div');
+                titleDiv.className = 'custom-iw-title';
+                titleDiv.style.cssText = 'position: absolute; top: 0; left: 15px; display: flex; align-items: center; height: 40px; z-index: 10;';
+                
+                // Add icon
+                const iconDiv = document.createElement('div');
+                iconDiv.style.cssText = `background-color: ${fileTypeColor}; width: 24px; height: 24px; border-radius: 50%; 
+                                        display: flex; align-items: center; justify-content: center; margin-right: 8px; flex-shrink: 0;`;
+                
+                const icon = document.createElement('i');
+                icon.className = `fas fa-${iconName}`;
+                icon.style.cssText = 'color: white; font-size: 12px;';
+                
+                iconDiv.appendChild(icon);
+                titleDiv.appendChild(iconDiv);
+                
+                // Add title text
+                const titleText = document.createElement('span');
+                titleText.textContent = displayName;
+                titleText.style.cssText = 'font-weight: 600; font-size: 14px; color: #333; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px;';
+                
+                titleDiv.appendChild(titleText);
+                lastInfoWindow.appendChild(titleDiv);
+              }
+            }
+            
+            // Find the content container and adjust its padding
+            const contentContainer = lastInfoWindow.querySelector('.gm-style-iw-d');
+            if (contentContainer) {
+              contentContainer.style.paddingTop = '0';
+            }
+            
+            // Adjust the close button height
+            const closeButton = lastInfoWindow.querySelector('button.gm-ui-hover-effect');
+            if (closeButton) {
+              closeButton.style.height = '36px';
+            }
+          }
+        }, 100);
       }, 100);
     }
     
@@ -220,12 +330,7 @@ const createInfoWindowContent = (pin) => {
   
   return `
     <div class="info-window">
-      <div class="info-header" style="display: flex; align-items: center; margin-bottom: 8px; border-bottom: 1px solid #eee; padding-bottom: 8px;">
-        <div style="background-color: ${fileTypeColor}; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 10px;">
-          <i class="fas fa-${iconName}" style="color: white; font-size: 14px;"></i>
-        </div>
-        <h3 style="margin: 0; font-weight: 600; font-size: 16px;">${displayName}</h3>
-      </div>
+      <div style="margin-bottom: 8px; border-bottom: 1px solid #eee; padding-bottom: 8px;"></div>
       <div style="font-size: 13px; color: #555;">
         <p style="margin: 4px 0;"><strong>Type:</strong> ${pin.type.toUpperCase()}</p>
         <p style="margin: 4px 0;"><strong>Directory:</strong> ${pin.directory || pin.path.split('/').slice(0, -1).pop() || 'Root'}</p>
