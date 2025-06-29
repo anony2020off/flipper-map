@@ -13,9 +13,13 @@
         <i :class="['fas', isDarkTheme ? 'fa-sun' : 'fa-moon']"></i>
       </button>
       -->
-      <button class="btn btn-sm btn-light d-flex align-items-center gap-1">
-        <i class="fas fa-plug"></i>
-        <span>Connect</span>
+      <button 
+        @click="handleFlipperConnection" 
+        :disabled="flipperStore.isConnecting"
+        :class="['btn btn-sm d-flex align-items-center gap-1', 
+                flipperStore.isConnected ? 'btn-success' : 'btn-light']">
+        <i :class="['fas', flipperStore.isConnected ? 'fa-check' : 'fa-plug', flipperStore.isConnecting ? 'fa-spin' : '']"></i>
+        <span>{{ flipperStore.isConnected ? 'Connected' : (flipperStore.isConnecting ? 'Connecting...' : 'Connect') }}</span>
       </button>
     </div>
     
@@ -157,6 +161,7 @@
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue';
 import { useLocationStore } from '../stores/location';
+import { useFlipperStore } from '../stores/flipper';
 import { useFileStore } from '../stores/files';
 
 const props = defineProps({
@@ -173,6 +178,7 @@ const props = defineProps({
 const emit = defineEmits(['search', 'select-pin']);
 
 const locationStore = useLocationStore();
+const flipperStore = useFlipperStore();
 const fileStore = useFileStore();
 const searchInput = ref(props.searchQuery);
 const activeFilters = ref([]);

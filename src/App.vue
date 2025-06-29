@@ -5,9 +5,11 @@ import Sidebar from './components/Sidebar.vue';
 import LoadingIndicator from './components/LoadingIndicator.vue';
 import { useLocationStore } from './stores/location';
 import { useFileStore } from './stores/files';
+import { useFlipperStore } from './stores/flipper';
 
 const locationStore = useLocationStore();
 const fileStore = useFileStore();
+const flipperStore = useFlipperStore();
 const searchQuery = ref('');
 const loadingMessage = ref('Loading...');
 const selectedPin = ref(null);
@@ -37,10 +39,38 @@ onMounted(async () => {
   await fileStore.loadFiles();
 });
 
-const filteredPins = computed(() => {
-  if (!searchQuery.value) return fileStore.sortedByDistance;
+// Combine pins from file system and Flipper device
+const allPins = computed(() => {
+  // Get pins from file system
+  const filePins = fileStore.sortedByDistance;
   
-  return fileStore.sortedByDistance.filter(file => 
+  // Get pins from Flipper device
+  const flipperPins = flipperStore.fileList.map(file => {
+    // Ensure we use the same coordinate property names as in fileStore
+    // This addresses the inconsistency between lat/lng and latitude/longitude
+    return {
+      ...file,
+      // If coordinates don't exist, use a default location near the user
+      latitude: file.latitude || (locationStore.userLocation?.latitude || 0),
+      longitude: file.longitude || (locationStore.userLocation?.longitude || 0),
+      // Calculate distance from user location
+      distance: locationStore.calculateDistance(
+        locationStore.userLocation?.latitude || 0,
+        locationStore.userLocation?.longitude || 0,
+        file.latitude || locationStore.userLocation?.latitude || 0,
+        file.longitude || locationStore.userLocation?.longitude || 0
+      )
+    };
+  });
+  
+  // Combine and sort by distance
+  return [...filePins, ...flipperPins].sort((a, b) => a.distance - b.distance);
+});
+
+const filteredPins = computed(() => {
+  if (!searchQuery.value) return allPins.value;
+  
+  return allPins.value.filter(file => 
     file.name.toLowerCase().includes(searchQuery.value.toLowerCase())
   );
 });
