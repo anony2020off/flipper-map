@@ -11,6 +11,8 @@ export const useFlipperStore = defineStore('flipper', () => {
   const connectionError = ref(null);
   const fileList = ref([]);
   const currentDirectory = ref('/ext/subghz'); // Track current directory
+  const fileReadQueue = ref([]); // Queue for files to read
+  const isProcessingQueue = ref(false); // Flag to track if we're processing the queue
   
   // Current file being processed
   const currentFile = ref({
@@ -208,8 +210,8 @@ export const useFlipperStore = defineStore('flipper', () => {
         
         // Only process files with supported extensions
         if (filename.endsWith('.sub') || filename.endsWith('.rfid') || filename.endsWith('.nfc')) {
-          // Read the file content to extract coordinates
-          readFileContent(path, filename, fileType);
+          // Add to file queue for processing
+          addToReadQueue(path, filename, fileType);
         }
       } catch (error) {
         console.error("Error parsing Flipper file entry:", error);
@@ -225,18 +227,18 @@ export const useFlipperStore = defineStore('flipper', () => {
     if (!writer.value || !isConnected.value) return;
     
     try {
-      // Store current file info
+      // Reset current file
       currentFile.value = {
         name: filename,
         path: path,
-        content: '',
-        type: fileType
+        type: fileType,
+        content: ''
       };
       
-      // Make sure path starts with /ext/ for consistency
+      // Adjust path for storage read command
       let adjustedPath = path;
-      if (!adjustedPath.startsWith('/ext/')) {
-        adjustedPath = `/ext/${adjustedPath.replace(/^\//, '')}`;
+      if (!adjustedPath.startsWith('/')) {
+        adjustedPath = `/${adjustedPath}`;
       }
       console.log(`Reading file content for ${adjustedPath}`);
       
@@ -246,7 +248,13 @@ export const useFlipperStore = defineStore('flipper', () => {
       // Wait for file content to be processed
       // The content will be processed in the readFromFlipper loop
       // and coordinates extracted in extractCoordinatesFromOutput
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      // If we didn't find coordinates, still add the file
+      if (!fileList.value.some(f => f.path === path)) {
+        console.log(`No coordinates found for ${filename}, adding without coordinates`);
+        addFileToList(filename, path, fileType, null, null);
+      }
     } catch (error) {
       console.error(`Error reading file ${path}:`, error);
       
@@ -289,27 +297,71 @@ export const useFlipperStore = defineStore('flipper', () => {
   };
   
   // Add file to list if not already there
-  const addFileToList = (filename, path, fileType, latitude, longitude) => {
-    // If file already exists in the list, update it
-    const existingIndex = fileList.value.findIndex(file => file.path === path);
+  const addFileToList = (name, path, fileType, latitude, longitude) => {
+    // Check if file already exists in list
+    const existingIndex = fileList.value.findIndex(f => f.path === path);
     
-    if (existingIndex >= 0) {
-      // Update existing file
-      if (latitude !== null && longitude !== null) {
-        fileList.value[existingIndex].latitude = latitude;
-        fileList.value[existingIndex].longitude = longitude;
-      }
+    // Create file object
+    const file = {
+      name,
+      path,
+      type: fileType || 'subghz', // Default to subghz if type not specified
+      source: 'flipper'
+    };
+    
+    // Add coordinates if available - always use latitude/longitude naming (not lat/lng)
+    if (latitude !== null && longitude !== null) {
+      file.latitude = latitude;
+      file.longitude = longitude;
+      
+      // Log successful coordinate extraction
+      console.log(`Found coordinates for ${name}: ${latitude}, ${longitude}`);
     } else {
-      // Add new file
-      fileList.value.push({
-        name: filename,
-        path: path,
-        type: fileType || 'subghz', // Default to subghz if type not specified
-        source: 'flipper',
-        // Use consistent coordinate naming (latitude/longitude) as used in file service
-        latitude: latitude,
-        longitude: longitude
-      });
+      console.log(`No coordinates found for ${name}`);
+    }
+    
+    // Add or update file in list
+    if (existingIndex !== -1) {
+      fileList.value[existingIndex] = file;
+    } else {
+      fileList.value.push(file);
+    }
+  };
+  
+  // Add file to read queue
+  const addToReadQueue = (path, filename, fileType) => {
+    // Add to queue
+    fileReadQueue.value.push({ path, filename, fileType });
+    console.log(`Added to read queue: ${filename} (${fileReadQueue.value.length} files in queue)`);
+    
+    // Start processing queue if not already processing
+    if (!isProcessingQueue.value) {
+      processFileQueue();
+    }
+  };
+  
+  // Process file read queue
+  const processFileQueue = async () => {
+    if (isProcessingQueue.value || fileReadQueue.value.length === 0) return;
+    
+    try {
+      isProcessingQueue.value = true;
+      
+      while (fileReadQueue.value.length > 0) {
+        // Get next file from queue
+        const { path, filename, fileType } = fileReadQueue.value.shift();
+        console.log(`Processing file from queue: ${filename} (${fileReadQueue.value.length} remaining)`);
+        
+        // Read file content
+        await readFileContent(path, filename, fileType);
+        
+        // Wait between file reads to avoid overwhelming the device
+        await new Promise(resolve => setTimeout(resolve, 500));
+      }
+    } catch (error) {
+      console.error("Error processing file queue:", error);
+    } finally {
+      isProcessingQueue.value = false;
     }
   };
   
@@ -318,26 +370,35 @@ export const useFlipperStore = defineStore('flipper', () => {
     if (!writer.value || !isConnected.value) return;
     
     try {
-      // Clear existing file list
+      // Clear existing file list and queue
       fileList.value = [];
+      fileReadQueue.value = [];
       
-      // List files from /ext/subghz directory
-      console.log("Listing files from '/ext/subghz'");
-      currentDirectory.value = '/ext/subghz';
-      await writer.value.write("storage list /ext/subghz\r\n");
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Process directories sequentially with proper waiting
+      const directories = [
+        '/ext/subghz',
+        '/ext/lfrfid',
+        '/ext/nfc'
+      ];
       
-      // List files from /ext/lfrfid directory
-      console.log("Listing files from '/ext/lfrfid'");
-      currentDirectory.value = '/ext/lfrfid';
-      await writer.value.write("storage list /ext/lfrfid\r\n");
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Process each directory
+      for (const dir of directories) {
+        console.log(`Listing files from '${dir}'`);
+        currentDirectory.value = dir;
+        
+        // Send command to list files
+        await writer.value.write(`storage list ${dir}\r\n`);
+        
+        // Wait longer to ensure all files are listed
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        
+        // Get the files we've found so far
+        const filesFound = fileList.value.filter(file => file.path.includes(dir));
+        console.log(`Found ${filesFound.length} files in ${dir}`);
+      }
       
-      // List files from /ext/nfc directory
-      console.log("Listing files from '/ext/nfc'");
-      currentDirectory.value = '/ext/nfc';
-      await writer.value.write("storage list /ext/nfc\r\n");
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      console.log(`Total files found: ${fileList.value.length}`);
+      console.log(`Files in read queue: ${fileReadQueue.value.length}`);
       
       return fileList.value;
     } catch (error) {
