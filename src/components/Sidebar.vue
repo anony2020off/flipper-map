@@ -151,7 +151,7 @@
             <div class="flex-grow-1 min-width-0 mx-3 overflow-hidden">
               <p class="mb-0 small fw-medium text-truncate">{{ removeFileExtension(pin.name) }}</p>
               <p v-if="pin.distance" class="mb-0 text-muted smaller d-flex align-items-center mt-1 text-truncate">
-                <i class="fas fa-route me-1 smaller flex-shrink-0"></i>
+                <i class="fas fa-location-dot me-1 smaller flex-shrink-0"></i>
                 <span class="text-truncate">{{ pin.distance < 1 ? `${(pin.distance * 1000).toFixed(0)} m` : `${pin.distance.toFixed(2)} km` }} away</span>
               </p>
             </div>
@@ -197,8 +197,8 @@
               <div class="flex-grow-1 min-width-0 mx-3 overflow-hidden">
                 <p class="mb-0 small fw-medium text-truncate">{{ removeFileExtension(pin.name) }}</p>
                 <p class="mb-0 text-muted smaller d-flex align-items-center mt-1 text-truncate">
-                  <i class="fas fa-file me-1 smaller flex-shrink-0"></i>
-                  <span class="text-truncate">{{ pin.source || 'local' }} file</span>
+                  <i class="fas fa-location-pin-lock me-1 smaller flex-shrink-0"></i>
+                  <span class="text-truncate" title="{{ pin.source || 'local' }} file">No location</span>
                 </p>
               </div>
             </div>
