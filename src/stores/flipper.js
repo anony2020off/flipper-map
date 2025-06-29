@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import { ref, computed } from 'vue';
+import { ref } from 'vue';
 
 export const useFlipperStore = defineStore('flipper', () => {
   // State
@@ -123,7 +123,7 @@ export const useFlipperStore = defineStore('flipper', () => {
         
         // Process complete lines
         for (const line of lines) {
-          await processFlipperOutput(line.trim());
+          processFlipperOutput(line.trim());
         }
       }
     } catch (error) {
@@ -137,82 +137,58 @@ export const useFlipperStore = defineStore('flipper', () => {
   };
   
   // Process output from Flipper
-  const processFlipperOutput = async (line) => {
+  const processFlipperOutput = (line) => {
     console.log("Flipper output:", line);
     
-    // Here we can parse different responses from the Flipper
-    // For now, we'll just collect file listing responses
-    if (line.startsWith('[') && line.includes('type: file')) {
-      // This looks like a file listing entry
+    // Check for file listing entries in different formats
+    if (line.includes('type: file') || line.match(/^\s*[F]\s+[\d]+\s+[\w\d\-\.]+$/)) {
       try {
-        // Extract filename from the line
-        const nameMatch = line.match(/name: "([^"]+)"/);
+        let filename = '';
+        let path = '';
+        
+        // Try to extract filename from JSON-like format
+        const nameMatch = line.match(/name: "([^"]+)"/); 
         if (nameMatch && nameMatch[1]) {
-          const filename = nameMatch[1];
+          filename = nameMatch[1];
+          const pathMatch = line.match(/path: "([^"]+)"/);  
+          if (pathMatch && pathMatch[1]) {
+            path = pathMatch[1];
+          }
+        } else {
+          // Try alternative format: F 1234 filename.sub
+          const altMatch = line.match(/^\s*[F]\s+[\d]+\s+([\w\d\-\.]+)$/);
+          if (altMatch && altMatch[1]) {
+            filename = altMatch[1];
+            // For this format, construct the path
+            path = `subghz/${filename}`;
+          }
+        }
+        
+        // Only add .sub files to our list
+        if (filename && filename.endsWith('.sub')) {
+          // Extract coordinates from filename if possible
+          // Format could be something like: signal_lat_42.123_lng_-71.456.sub
+          let latitude = null;
+          let longitude = null;
           
-          // Only add .sub files to our list
-          if (filename.endsWith('.sub')) {
-            const pathMatch = line.match(/path: "([^"]+)"/);
-            const path = pathMatch ? pathMatch[1] : '';
-            
-            // Read file content to extract coordinates
-            if (writer.value && isConnected.value) {
-              try {
-                // Command to read file content
-                await writer.value.write(`storage read ${path}\r\n`);
-                
-                // Wait for file content to be read
-                await new Promise(resolve => setTimeout(resolve, 500));
-                
-                // Extract coordinates from file name or content
-                // For this example, we'll use a simple pattern: assume coordinates might be in filename
-                // Format could be something like: signal_lat_42.123_lng_-71.456.sub
-                let latitude = null;
-                let longitude = null;
-                
-                // Try to extract from filename
-                const coordsMatch = filename.match(/lat_([\d.-]+)_lng_([\d.-]+)/i);
-                if (coordsMatch) {
-                  latitude = parseFloat(coordsMatch[1]);
-                  longitude = parseFloat(coordsMatch[2]);
-                }
-                
-                // Add to file list if not already there
-                if (!fileList.value.some(file => file.path === path)) {
-                  fileList.value.push({
-                    name: filename,
-                    path: path,
-                    type: 'subghz',
-                    source: 'flipper',
-                    // Use consistent coordinate naming (latitude/longitude) as used in file service
-                    latitude: latitude,
-                    longitude: longitude
-                  });
-                }
-              } catch (error) {
-                console.error('Error reading file content:', error);
-                
-                // Still add the file without coordinates
-                if (!fileList.value.some(file => file.path === path)) {
-                  fileList.value.push({
-                    name: filename,
-                    path: path,
-                    type: 'subghz',
-                    source: 'flipper'
-                  });
-                }
-              }
-            } else {
-              // Add to file list without coordinates if we can't read the file
-              if (!fileList.value.some(file => file.path === path)) {
-                fileList.value.push({
-                  name: filename,
-                  path: path,
-                  type: 'subghz',
-                  source: 'flipper'
-                });
-              }
-            }
+          // Try to extract from filename
+          const coordsMatch = filename.match(/lat_([\d.-]+)_lng_([\d.-]+)/i);
+          if (coordsMatch) {
+            latitude = parseFloat(coordsMatch[1]);
+            longitude = parseFloat(coordsMatch[2]);
+          }
+          
+          // Add to file list if not already there
+          if (!fileList.value.some(file => file.path === path)) {
+            fileList.value.push({
+              name: filename,
+              path: path,
+              type: 'subghz',
+              source: 'flipper',
+              // Use consistent coordinate naming (latitude/longitude) as used in file service
+              latitude: latitude,
+              longitude: longitude
+            });
           }
         }
       } catch (error) {
@@ -229,8 +205,18 @@ export const useFlipperStore = defineStore('flipper', () => {
       // Clear existing file list
       fileList.value = [];
       
-      // Send command to list files
-      await writer.value.write("storage list /ext/subghz/\r\n");
+      // Try different path formats
+      console.log("Trying to list files with 'storage list subghz'");
+      await writer.value.write("storage list subghz\r\n");
+      
+      // Wait a bit and check if we got any files
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // If no files found, try with /ext prefix
+      if (fileList.value.length === 0) {
+        console.log("No files found, trying 'storage list /ext/subghz'");
+        await writer.value.write("storage list /ext/subghz\r\n");
+      }
       
       // Wait for response to be processed
       await new Promise(resolve => setTimeout(resolve, 1000));
