@@ -100,6 +100,26 @@ const addMarkers = () => {
       pixelOffset: new google.maps.Size(0, isSelected ? -5 : 0)
     });
     
+    // Track hover state
+    let isHovered = false;
+    
+    // Add hover effect using mouseover and mouseout events
+    marker.addListener('mouseover', () => {
+      if (!isSelected) {
+        isHovered = true;
+        marker.setIcon(getMarkerIcon(pin.type, true)); // Use the selected icon style for hover
+        marker.setZIndex(500); // Bring hovered marker above normal markers but below selected
+      }
+    });
+    
+    marker.addListener('mouseout', () => {
+      if (!isSelected && isHovered) {
+        isHovered = false;
+        marker.setIcon(getMarkerIcon(pin.type, false)); // Restore normal icon
+        marker.setZIndex(1); // Restore normal z-index
+      }
+    });
+    
     marker.addListener('click', () => {
       // Close any open info windows
       if (currentInfoWindow) {
@@ -141,10 +161,10 @@ const getMarkerIcon = (fileType, isSelected = false) => {
     iconName = 'broadcast-tower';
   }
   
-  // Create SVG icon matching the sidebar list
-  const size = isSelected ? 44 : 40;
-  const iconSize = isSelected ? 18 : 16;
-  const strokeWidth = isSelected ? 3 : 2;
+  // Create small circles by default, larger with icons when selected (hover)
+  const size = isSelected ? 44 : 24; // Small circle when not selected
+  const iconSize = isSelected ? 18 : 0; // No icon when not selected
+  const strokeWidth = isSelected ? 3 : 1.5;
   
   // Font Awesome icon paths for consistent icons
   const iconPaths = {
@@ -160,7 +180,7 @@ const getMarkerIcon = (fileType, isSelected = false) => {
     'file': 'M224 136V0H24C10.7 0 0 10.7 0 24v464c0 13.3 10.7 24 24 24h336c13.3 0 24-10.7 24-24V160H248c-13.2 0-24-10.8-24-24zm160-14.1v6.1H256V0h6.1c6.4 0 12.5 2.5 17 7l97.9 98c4.5 4.5 7 10.6 7 16.9z'
   };
   
-  // Create SVG icon
+  // Create SVG icon (only used when selected/hovered)
   const svg = `
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${iconName === 'broadcast-tower' ? 640 : 576} 512" width="${iconSize}px" height="${iconSize}px">
       <path fill="white" d="${iconPaths[iconName] || iconPaths['file']}"/>
@@ -170,12 +190,12 @@ const getMarkerIcon = (fileType, isSelected = false) => {
   // Create data URL from SVG
   const svgUrl = 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(svg);
   
-  // Create marker with circle background and icon
+  // Create marker with circle background and icon (only when selected)
   return {
     url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(`
       <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
-        <circle cx="${size/2}" cy="${size/2}" r="${size/2 - strokeWidth/2}" fill="${color}" stroke="${isSelected ? '#4f46e5' : '#ffffff'}" stroke-width="${strokeWidth}" />
-        <image href="${svgUrl}" x="${size/2 - iconSize/2}" y="${size/2 - iconSize/2}" width="${iconSize}" height="${iconSize}" />
+        <circle cx="${size/2}" cy="${size/2}" r="${size/2 - strokeWidth/2}" fill="${color}" stroke="#ffffff" stroke-width="${strokeWidth}" />
+        ${isSelected ? `<image href="${svgUrl}" x="${size/2 - iconSize/2}" y="${size/2 - iconSize/2}" width="${iconSize}" height="${iconSize}" />` : ''}
       </svg>
     `)}`,
     scaledSize: new google.maps.Size(size, size),
