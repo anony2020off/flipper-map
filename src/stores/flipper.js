@@ -172,8 +172,8 @@ export const useFlipperStore = defineStore('flipper', () => {
             path = pathMatch[1];
           }
         } else {
-          // Parse format: [F] filename.sub 123b
-          const fileMatch = line.match(/^\s*\[F\]\s+([^\s]+)\s+\d+b$/);
+          // Parse format: [F] filename.sub 123b or [F] File With Spaces.sub 123b
+          const fileMatch = line.match(/^\s*\[F\]\s+(.+?)\s+\d+b$/);
           if (fileMatch && fileMatch[1]) {
             filename = fileMatch[1];
             
@@ -242,8 +242,11 @@ export const useFlipperStore = defineStore('flipper', () => {
       }
       console.log(`Reading file content for ${adjustedPath}`);
       
+      // Quote the path to handle spaces
+      const quotedPath = adjustedPath.includes(' ') ? `"${adjustedPath}"` : adjustedPath;
+      
       // Send command to read file
-      await writer.value.write(`storage read ${adjustedPath}\r\n`);
+      await writer.value.write(`storage read ${quotedPath}\r\n`);
       
       // Wait for file content to be processed
       // The content will be processed in the readFromFlipper loop
