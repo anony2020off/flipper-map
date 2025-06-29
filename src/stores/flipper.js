@@ -10,6 +10,7 @@ export const useFlipperStore = defineStore('flipper', () => {
   const isConnecting = ref(false);
   const connectionError = ref(null);
   const fileList = ref([]);
+  const currentDirectory = ref('/ext/subghz'); // Track current directory
   
   // Current file being processed
   const currentFile = ref({
@@ -148,10 +149,17 @@ export const useFlipperStore = defineStore('flipper', () => {
     console.log("Flipper output:", line);
     
     // Check for file listing entries in different formats
-    if (line.includes('type: file') || line.match(/^\s*[F]\s+[\d]+\s+[\w\d\-\.]+$/)) {
+    if (line.includes('type: file') || line.match(/^\s*\[F\]/) || line.match(/^\s*\[D\]/)) {
       try {
+        // Skip directory entries
+        if (line.match(/^\s*\[D\]/)) {
+          console.log("Skipping directory entry:", line);
+          return;
+        }
+        
         let filename = '';
         let path = '';
+        let currentDir = '';
         
         // Try to extract filename from JSON-like format
         const nameMatch = line.match(/name: "([^"]+)"/); 
@@ -162,13 +170,14 @@ export const useFlipperStore = defineStore('flipper', () => {
             path = pathMatch[1];
           }
         } else {
-          // Try alternative format: F 1234 filename.sub
-          const altMatch = line.match(/^\s*[F]\s+[\d]+\s+([\w\d\-\.]+)$/);
-          if (altMatch && altMatch[1]) {
-            filename = altMatch[1];
-            // For this format, construct the path based on current directory
-            // Default to subghz if we can't determine
-            path = `/ext/subghz/${filename}`;
+          // Parse format: [F] filename.sub 123b
+          const fileMatch = line.match(/^\s*\[F\]\s+([^\s]+)\s+\d+b$/);
+          if (fileMatch && fileMatch[1]) {
+            filename = fileMatch[1];
+            
+            // Use the tracked current directory
+            // Construct the path
+            path = `${currentDirectory.value}/${filename}`;
           }
         }
         
@@ -314,16 +323,19 @@ export const useFlipperStore = defineStore('flipper', () => {
       
       // List files from /ext/subghz directory
       console.log("Listing files from '/ext/subghz'");
+      currentDirectory.value = '/ext/subghz';
       await writer.value.write("storage list /ext/subghz\r\n");
       await new Promise(resolve => setTimeout(resolve, 1000));
       
       // List files from /ext/lfrfid directory
       console.log("Listing files from '/ext/lfrfid'");
+      currentDirectory.value = '/ext/lfrfid';
       await writer.value.write("storage list /ext/lfrfid\r\n");
       await new Promise(resolve => setTimeout(resolve, 1000));
       
       // List files from /ext/nfc directory
       console.log("Listing files from '/ext/nfc'");
+      currentDirectory.value = '/ext/nfc';
       await writer.value.write("storage list /ext/nfc\r\n");
       await new Promise(resolve => setTimeout(resolve, 1000));
       
