@@ -48,18 +48,23 @@ const allPins = computed(() => {
   const flipperPins = flipperStore.fileList.map(file => {
     // Ensure we use the same coordinate property names as in fileStore
     // This addresses the inconsistency between lat/lng and latitude/longitude
-    return {
-      ...file,
-      // If coordinates don't exist, use a default location near the user
-      latitude: file.latitude || (locationStore.userLocation?.latitude || 0),
-      longitude: file.longitude || (locationStore.userLocation?.longitude || 0),
-      // Calculate distance from user location
-      distance: locationStore.calculateDistance(
+    const hasCoordinates = file.latitude !== undefined && 
+                         file.longitude !== undefined && 
+                         file.latitude !== null && 
+                         file.longitude !== null;
+    
+    // Only calculate distance if the file has actual coordinates
+    const distance = hasCoordinates ? 
+      locationStore.calculateDistance(
         locationStore.userLocation?.latitude || 0,
         locationStore.userLocation?.longitude || 0,
-        file.latitude || locationStore.userLocation?.latitude || 0,
-        file.longitude || locationStore.userLocation?.longitude || 0
-      )
+        file.latitude,
+        file.longitude
+      ) : null;
+    
+    return {
+      ...file,
+      distance
     };
   });
   

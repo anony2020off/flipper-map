@@ -266,21 +266,32 @@ const filteredPins = computed(() => {
 // Separate pins into geolocated and non-geolocated
 const geolocatedPins = computed(() => {
   return filteredPins.value.filter(pin => {
-    // Check if pin has both latitude and longitude coordinates
-    return pin.latitude !== undefined && 
-           pin.longitude !== undefined && 
+    // Check if pin has original latitude and longitude coordinates (not default values)
+    // We need to check if the coordinates were in the original file
+    return pin.hasOwnProperty('latitude') && 
+           pin.hasOwnProperty('longitude') && 
            pin.latitude !== null && 
-           pin.longitude !== null;
+           pin.longitude !== null &&
+           // Check that we're not using default coordinates
+           !(pin.source === 'flipper' && pin.latitude === 0 && pin.longitude === 0) &&
+           !(pin.source === 'flipper' && 
+              pin.latitude === locationStore.userLocation?.latitude && 
+              pin.longitude === locationStore.userLocation?.longitude);
   }).sort((a, b) => a.distance - b.distance); // Sort by distance
 });
 
 const nonGeolocatedPins = computed(() => {
   return filteredPins.value.filter(pin => {
-    // Check if pin is missing latitude or longitude
-    return pin.latitude === undefined || 
-           pin.longitude === undefined || 
+    // Check if pin is missing original coordinates or has default values
+    return !pin.hasOwnProperty('latitude') || 
+           !pin.hasOwnProperty('longitude') || 
            pin.latitude === null || 
-           pin.longitude === null;
+           pin.longitude === null ||
+           // Check for default coordinates
+           (pin.source === 'flipper' && pin.latitude === 0 && pin.longitude === 0) ||
+           (pin.source === 'flipper' && 
+            pin.latitude === locationStore.userLocation?.latitude && 
+            pin.longitude === locationStore.userLocation?.longitude);
   });
 });
 
