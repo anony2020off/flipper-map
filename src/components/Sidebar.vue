@@ -1,10 +1,10 @@
 <template>
   <div class="sidebar overflow-auto d-flex flex-column shadow h-100" style="width: 360px; min-width: 360px; max-width: 360px;">
     <!-- Header with logo and title -->
-    <div class="bg-primary bg-gradient text-white p-3 d-flex justify-content-between align-items-center">
+    <div class="custom-primary-bg text-white p-3 d-flex justify-content-between align-items-center">
       <div class="d-flex align-items-center gap-2">
         <div class="d-flex align-items-center justify-content-center bg-white rounded p-2" style="width: 40px; height: 40px;">
-          <i class="fas fa-map-marker-alt text-primary fs-5"></i>
+          <i class="fas fa-map-marker-alt custom-primary-text fs-5"></i>
         </div>
         <h1 class="fs-5 fw-bold mb-0">Flipper Map</h1>
       </div>
@@ -36,7 +36,7 @@
         <button 
           @click="toggleFilter('subghz')" 
           :class="['btn btn-sm d-flex align-items-center gap-1', 
-                  activeFilters.includes('subghz') ? 'btn-primary' : 'btn-outline-secondary']">
+                  activeFilters.includes('subghz') ? 'custom-primary-btn' : 'btn-outline-secondary']">
           <i class="fas fa-broadcast-tower"></i>
           <span>RF</span>
           <span class="ms-1 badge bg-secondary rounded-pill">
@@ -47,7 +47,7 @@
         <button 
           @click="toggleFilter('rfid')" 
           :class="['btn btn-sm d-flex align-items-center gap-1', 
-                  activeFilters.includes('rfid') ? 'btn-primary' : 'btn-outline-secondary']">
+                  activeFilters.includes('rfid') ? 'custom-primary-btn' : 'btn-outline-secondary']">
           <i class="fas fa-id-card"></i>
           <span>RFID</span>
           <span class="ms-1 badge bg-secondary rounded-pill">
@@ -58,7 +58,7 @@
         <button 
           @click="toggleFilter('nfc')" 
           :class="['btn btn-sm d-flex align-items-center gap-1', 
-                  activeFilters.includes('nfc') ? 'btn-primary' : 'btn-outline-secondary']">
+                  activeFilters.includes('nfc') ? 'custom-primary-btn' : 'btn-outline-secondary']">
           <i class="fas fa-wifi"></i>
           <span>NFC</span>
           <span class="ms-1 badge bg-secondary rounded-pill">
@@ -72,8 +72,8 @@
     <div class="p-3 border-bottom">
       <div class="d-flex justify-content-between align-items-center mb-2">
         <h6 class="text-uppercase fw-semibold text-muted small mb-0">Your Location</h6>
-        <span class="d-flex align-items-center justify-content-center bg-primary bg-opacity-10 rounded-circle" style="width: 24px; height: 24px;">
-          <i class="fas fa-location-dot text-primary small"></i>
+        <span class="d-flex align-items-center justify-content-center custom-primary-bg-light rounded-circle" style="width: 24px; height: 24px;">
+          <i class="fas fa-location-dot custom-primary-text small"></i>
         </span>
       </div>
       
@@ -90,7 +90,7 @@
       <div v-else-if="locationStore.locationError" class="mt-2 p-3 bg-danger bg-opacity-10 border border-danger border-opacity-25 rounded text-danger small">
         <i class="fas fa-exclamation-triangle me-1"></i> {{ locationStore.locationError }}
       </div>
-      <div v-else class="mt-2 p-3 bg-primary bg-opacity-10 border border-primary border-opacity-25 rounded text-primary small d-flex align-items-center">
+      <div v-else class="mt-2 p-3 custom-primary-bg-light border custom-primary-border rounded custom-primary-text small d-flex align-items-center">
         <i class="fas fa-spinner fa-spin me-2"></i> Getting your location...
       </div>
     </div>
@@ -244,6 +244,39 @@ searchInput.value = newValue;
 </script>
 
 <style>
+/* Custom primary color styles */
+.custom-primary-bg {
+  background-color: #ff8200;
+}
+
+.custom-primary-bg-light {
+  background-color: rgba(255, 130, 0, 0.1);
+}
+
+.custom-primary-text {
+  color: #ff8200;
+}
+
+.custom-primary-border {
+  border-color: rgba(255, 130, 0, 0.25);
+}
+
+.custom-primary-btn {
+  color: #fff;
+  background-color: #ff8200;
+  border-color: #ff8200;
+}
+
+.custom-primary-btn:hover {
+  color: #fff;
+  background-color: #e67600;
+  border-color: #d96e00;
+}
+
+.custom-primary-btn:focus {
+  box-shadow: 0 0 0 0.25rem rgba(255, 130, 0, 0.5);
+}
+
 /* Add Font Awesome for icons */
 @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css');
 
