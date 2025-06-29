@@ -17,9 +17,16 @@
         @click="handleFlipperConnection" 
         :disabled="flipperStore.isConnecting"
         :class="['btn btn-sm d-flex align-items-center gap-1', 
-                flipperStore.isConnected ? 'btn-success' : 'btn-light']">
-        <i :class="['fas', flipperStore.isConnected ? 'fa-check' : 'fa-plug', flipperStore.isConnecting ? 'fa-spin' : '']"></i>
-        <span>{{ flipperStore.isConnected ? 'Connected' : (flipperStore.isConnecting ? 'Connecting...' : 'Connect') }}</span>
+                flipperStore.isConnected ? 'btn-light' : 'btn-light']">
+        <i :class="['fas', 
+                  flipperStore.isSyncing ? 'fa-sync fa-spin' : 
+                  (flipperStore.isConnected ? 'fa-check' : 'fa-plug'), 
+                  flipperStore.isConnecting ? 'fa-spin' : '']"></i>
+        <span>
+          {{ flipperStore.isSyncing ? 'Syncing' : 
+             (flipperStore.isConnected ? 'Connected' : 
+              (flipperStore.isConnecting ? 'Connecting...' : 'Connect')) }}
+        </span>
       </button>
     </div>
     

@@ -8,6 +8,7 @@ export const useFlipperStore = defineStore('flipper', () => {
   const writer = ref(null);
   const isConnected = ref(false);
   const isConnecting = ref(false);
+  const isSyncing = ref(false); // Track when files are being synced
   const connectionError = ref(null);
   const fileList = ref([]);
   const currentDirectory = ref('/ext/subghz'); // Track current directory
@@ -345,7 +346,7 @@ export const useFlipperStore = defineStore('flipper', () => {
   
   // Process file read queue
   const processFileQueue = async () => {
-    if (isProcessingQueue.value || fileReadQueue.value.length === 0) return;
+    if (isProcessingQueue.value) return;
     
     try {
       isProcessingQueue.value = true;
@@ -365,6 +366,7 @@ export const useFlipperStore = defineStore('flipper', () => {
       console.error("Error processing file queue:", error);
     } finally {
       isProcessingQueue.value = false;
+      isSyncing.value = false; // Set syncing to false when queue processing is done
     }
   };
   
@@ -373,6 +375,9 @@ export const useFlipperStore = defineStore('flipper', () => {
     if (!writer.value || !isConnected.value) return;
     
     try {
+      // Set syncing state to true
+      isSyncing.value = true;
+      
       // Clear existing file list and queue
       fileList.value = [];
       fileReadQueue.value = [];
@@ -411,8 +416,12 @@ export const useFlipperStore = defineStore('flipper', () => {
   };
   
   return {
+    port,
+    reader,
+    writer,
     isConnected,
     isConnecting,
+    isSyncing,
     connectionError,
     fileList,
     connectFlipper,
