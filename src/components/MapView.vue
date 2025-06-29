@@ -83,6 +83,13 @@ const addMarkers = () => {
     const position = { lat: pin.latitude, lng: pin.longitude };
     const isSelected = props.selectedPin && props.selectedPin.path === pin.path;
     
+    // Store marker properties for reference
+    const markerProps = {
+      isSelected,
+      pinType: pin.type,
+      hasOpenInfoWindow: false
+    };
+    
     // Create marker with custom icon based on file type
     const marker = new google.maps.Marker({
       position,
@@ -106,8 +113,9 @@ const addMarkers = () => {
       ariaLabel: displayName
     });
     
-    // Track hover state
+    // Track hover and open info window states
     let isHovered = false;
+    let hasOpenInfoWindow = false;
     
     // Add hover effect using mouseover and mouseout events
     marker.addListener('mouseover', () => {
@@ -119,7 +127,7 @@ const addMarkers = () => {
     });
     
     marker.addListener('mouseout', () => {
-      if (!isSelected && isHovered) {
+      if (!isSelected && isHovered && !hasOpenInfoWindow) {
         isHovered = false;
         marker.setIcon(getMarkerIcon(pin.type, false)); // Restore normal icon
         marker.setZIndex(1); // Restore normal z-index
@@ -127,14 +135,29 @@ const addMarkers = () => {
     });
     
     marker.addListener('click', () => {
-      // Close any open info windows
+      // Close any open info windows and reset their markers
       if (currentInfoWindow) {
+        // Find the marker with open info window and reset its icon if it exists
+        markers.value.forEach(m => {
+          if (m.hasOpenInfoWindow) {
+            m.hasOpenInfoWindow = false;
+            if (!m.isSelected) {
+              m.setIcon(getMarkerIcon(m.pinType, false));
+              m.setZIndex(1);
+            }
+          }
+        });
         currentInfoWindow.close();
       }
       
       // Open this info window and store reference
       infoWindow.open(map.value, marker);
       currentInfoWindow = infoWindow;
+      
+      // Mark this marker as having an open info window and keep it in hovered state
+      hasOpenInfoWindow = true;
+      marker.hasOpenInfoWindow = true;
+      marker.pinType = pin.type; // Store the pin type for reference
       
       // Apply custom styling to the InfoWindow header after it's opened
       setTimeout(() => {
