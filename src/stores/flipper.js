@@ -11,6 +11,13 @@ export const useFlipperStore = defineStore('flipper', () => {
   const connectionError = ref(null);
   const fileList = ref([]);
   
+  // Current file being processed
+  const currentFile = ref({
+    name: '',
+    path: '',
+    content: ''
+  });
+  
   // Actions
   const connectFlipper = async () => {
     if (!navigator.serial) {
@@ -159,41 +166,141 @@ export const useFlipperStore = defineStore('flipper', () => {
           const altMatch = line.match(/^\s*[F]\s+[\d]+\s+([\w\d\-\.]+)$/);
           if (altMatch && altMatch[1]) {
             filename = altMatch[1];
-            // For this format, construct the path
-            path = `subghz/${filename}`;
+            // For this format, construct the path based on current directory
+            // Default to subghz if we can't determine
+            path = `/ext/subghz/${filename}`;
           }
         }
         
-        // Only add .sub files to our list
-        if (filename && filename.endsWith('.sub')) {
-          // Extract coordinates from filename if possible
-          // Format could be something like: signal_lat_42.123_lng_-71.456.sub
-          let latitude = null;
-          let longitude = null;
-          
-          // Try to extract from filename
-          const coordsMatch = filename.match(/lat_([\d.-]+)_lng_([\d.-]+)/i);
-          if (coordsMatch) {
-            latitude = parseFloat(coordsMatch[1]);
-            longitude = parseFloat(coordsMatch[2]);
-          }
-          
-          // Add to file list if not already there
-          if (!fileList.value.some(file => file.path === path)) {
-            fileList.value.push({
-              name: filename,
-              path: path,
-              type: 'subghz',
-              source: 'flipper',
-              // Use consistent coordinate naming (latitude/longitude) as used in file service
-              latitude: latitude,
-              longitude: longitude
-            });
-          }
+        // Ignore files that start with a dot (.)
+        if (filename && filename.startsWith('.')) {
+          console.log(`Ignoring hidden file: ${filename}`);
+          return;
+        }
+        
+        // Determine file type based on path and extension
+        let fileType = 'unknown';
+        if (path.includes('/ext/subghz') || path.includes('subghz')) {
+          fileType = 'subghz';
+        } else if (path.includes('/ext/lfrfid') || path.includes('lfrfid')) {
+          fileType = 'rfid';
+        } else if (path.includes('/ext/nfc') || path.includes('nfc')) {
+          fileType = 'nfc';
+        }
+        
+        // Check file extension
+        if (filename.endsWith('.sub')) {
+          fileType = 'subghz';
+        } else if (filename.endsWith('.rfid')) {
+          fileType = 'rfid';
+        } else if (filename.endsWith('.nfc')) {
+          fileType = 'nfc';
+        }
+        
+        // Only process files with supported extensions
+        if (filename.endsWith('.sub') || filename.endsWith('.rfid') || filename.endsWith('.nfc')) {
+          // Read the file content to extract coordinates
+          readFileContent(path, filename, fileType);
         }
       } catch (error) {
         console.error("Error parsing Flipper file entry:", error);
       }
+    } else if (line.includes('Latitude:') || line.includes('Longitude:')) {
+      // This might be file content with coordinates
+      extractCoordinatesFromOutput(line);
+    }
+  };
+  
+  // Read file content from Flipper
+  const readFileContent = async (path, filename, fileType) => {
+    if (!writer.value || !isConnected.value) return;
+    
+    try {
+      // Store current file info
+      currentFile.value = {
+        name: filename,
+        path: path,
+        content: '',
+        type: fileType
+      };
+      
+      // Make sure path starts with /ext/ for consistency
+      let adjustedPath = path;
+      if (!adjustedPath.startsWith('/ext/')) {
+        adjustedPath = `/ext/${adjustedPath.replace(/^\//, '')}`;
+      }
+      console.log(`Reading file content for ${adjustedPath}`);
+      
+      // Send command to read file
+      await writer.value.write(`storage read ${adjustedPath}\r\n`);
+      
+      // Wait for file content to be processed
+      // The content will be processed in the readFromFlipper loop
+      // and coordinates extracted in extractCoordinatesFromOutput
+      await new Promise(resolve => setTimeout(resolve, 1000));
+    } catch (error) {
+      console.error(`Error reading file ${path}:`, error);
+      
+      // Still add the file without coordinates
+      addFileToList(filename, path, fileType, null, null);
+    }
+  };
+  
+  // Extract coordinates from file output
+  const extractCoordinatesFromOutput = (line) => {
+    // Append to current file content
+    currentFile.value.content += line + '\n';
+    
+    // Check if we have both latitude and longitude
+    const content = currentFile.value.content;
+    const latitudeMatch = content.match(/Latitude:\s*(-?\d+\.\d+)/);
+    const longitudeMatch = content.match(/Longitude:\s*(-?\d+\.\d+)/);
+    
+    if (latitudeMatch && longitudeMatch) {
+      const latitude = parseFloat(latitudeMatch[1]);
+      const longitude = parseFloat(longitudeMatch[1]);
+      
+      // Add file to list with coordinates
+      addFileToList(
+        currentFile.value.name,
+        currentFile.value.path,
+        currentFile.value.type,
+        latitude,
+        longitude
+      );
+      
+      // Reset current file
+      currentFile.value = {
+        name: '',
+        path: '',
+        content: '',
+        type: ''
+      };
+    }
+  };
+  
+  // Add file to list if not already there
+  const addFileToList = (filename, path, fileType, latitude, longitude) => {
+    // If file already exists in the list, update it
+    const existingIndex = fileList.value.findIndex(file => file.path === path);
+    
+    if (existingIndex >= 0) {
+      // Update existing file
+      if (latitude !== null && longitude !== null) {
+        fileList.value[existingIndex].latitude = latitude;
+        fileList.value[existingIndex].longitude = longitude;
+      }
+    } else {
+      // Add new file
+      fileList.value.push({
+        name: filename,
+        path: path,
+        type: fileType || 'subghz', // Default to subghz if type not specified
+        source: 'flipper',
+        // Use consistent coordinate naming (latitude/longitude) as used in file service
+        latitude: latitude,
+        longitude: longitude
+      });
     }
   };
   
@@ -205,20 +312,19 @@ export const useFlipperStore = defineStore('flipper', () => {
       // Clear existing file list
       fileList.value = [];
       
-      // Try different path formats
-      console.log("Trying to list files with 'storage list subghz'");
-      await writer.value.write("storage list subghz\r\n");
-      
-      // Wait a bit and check if we got any files
+      // List files from /ext/subghz directory
+      console.log("Listing files from '/ext/subghz'");
+      await writer.value.write("storage list /ext/subghz\r\n");
       await new Promise(resolve => setTimeout(resolve, 1000));
       
-      // If no files found, try with /ext prefix
-      if (fileList.value.length === 0) {
-        console.log("No files found, trying 'storage list /ext/subghz'");
-        await writer.value.write("storage list /ext/subghz\r\n");
-      }
+      // List files from /ext/lfrfid directory
+      console.log("Listing files from '/ext/lfrfid'");
+      await writer.value.write("storage list /ext/lfrfid\r\n");
+      await new Promise(resolve => setTimeout(resolve, 1000));
       
-      // Wait for response to be processed
+      // List files from /ext/nfc directory
+      console.log("Listing files from '/ext/nfc'");
+      await writer.value.write("storage list /ext/nfc\r\n");
       await new Promise(resolve => setTimeout(resolve, 1000));
       
       return fileList.value;
