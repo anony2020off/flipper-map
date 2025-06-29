@@ -107,15 +107,7 @@
     
     <!-- Pins list -->
     <div class="flex-grow-1 overflow-auto">
-      <div class="p-3 border-bottom">
-        <div class="d-flex justify-content-between align-items-center">
-          <h6 class="text-uppercase fw-semibold text-muted small mb-0">Nearby Pins</h6>
-          <span class="badge bg-secondary rounded-pill">
-            {{ filteredPins.length }}
-          </span>
-        </div>
-      </div>
-      
+      <!-- No pins found message -->
       <div v-if="filteredPins.length === 0" class="d-flex flex-column align-items-center justify-content-center py-5">
         <div class="d-flex align-items-center justify-content-center bg-light rounded-circle mb-3" style="width: 48px; height: 48px;">
           <i class="fas fa-search text-muted"></i>
@@ -123,16 +115,31 @@
         <p class="text-muted small">No pins found</p>
       </div>
       
-      <div v-else class="list-group list-group-flush">
-        <!-- Single list of pins -->
-        <a 
-          v-for="pin in filteredPins" 
-          :key="pin.path"
-          href="#"
-          class="list-group-item list-group-item-action px-3 py-3 overflow-hidden"
-          :class="{'active': selectedPin && selectedPin.path === pin.path}"
-          @click.prevent="selectPin(pin)"
-        >
+      <div v-else>
+        <!-- Geolocated pins section -->
+        <div class="p-3 border-bottom">
+          <div class="d-flex justify-content-between align-items-center">
+            <h6 class="text-uppercase fw-semibold text-muted small mb-0">Nearby Pins</h6>
+            <span class="badge bg-secondary rounded-pill">
+              {{ geolocatedPins.length }}
+            </span>
+          </div>
+        </div>
+        
+        <div v-if="geolocatedPins.length === 0" class="px-3 py-2">
+          <p class="text-muted small fst-italic">No geolocated pins found</p>
+        </div>
+        
+        <div class="list-group list-group-flush">
+          <!-- Geolocated pins -->
+          <a 
+            v-for="pin in geolocatedPins" 
+            :key="pin.path"
+            href="#"
+            class="list-group-item list-group-item-action px-3 py-3 overflow-hidden"
+            :class="{'active': selectedPin && selectedPin.path === pin.path}"
+            @click.prevent="selectPin(pin)"
+          >
           <div class="d-flex align-items-center">
             <div 
               class="d-flex align-items-center justify-content-center rounded-circle shadow-sm flex-shrink-0" 
@@ -153,6 +160,50 @@
             </div>
           </div>
         </a>
+        </div>
+        
+        <!-- Non-geolocated pins section -->
+        <div class="p-3 border-bottom">
+          <div class="d-flex justify-content-between align-items-center">
+            <h6 class="text-uppercase fw-semibold text-muted small mb-0">Other Pins</h6>
+            <span class="badge bg-secondary rounded-pill">
+              {{ nonGeolocatedPins.length }}
+            </span>
+          </div>
+        </div>
+        
+        <div v-if="nonGeolocatedPins.length === 0" class="px-3 py-2">
+          <p class="text-muted small fst-italic">No other pins found</p>
+        </div>
+        
+        <div class="list-group list-group-flush">
+          <!-- Non-geolocated pins -->
+          <a 
+            v-for="pin in nonGeolocatedPins" 
+            :key="pin.path"
+            href="#"
+            class="list-group-item list-group-item-action px-3 py-3 overflow-hidden"
+            :class="{'active': selectedPin && selectedPin.path === pin.path}"
+            @click.prevent="selectPin(pin)"
+          >
+            <div class="d-flex align-items-center">
+              <div 
+                class="d-flex align-items-center justify-content-center rounded-circle shadow-sm flex-shrink-0" 
+                style="width: 40px; height: 40px; min-width: 40px;"
+                :style="{ backgroundColor: fileStore.getFileColor(pin.type) }"
+              >
+                <i :class="['fas', `fa-${fileStore.getFileIcon(pin.type)}`, 'text-white']"></i>
+              </div>
+              <div class="flex-grow-1 min-width-0 mx-3 overflow-hidden">
+                <p class="mb-0 small fw-medium text-truncate">{{ removeFileExtension(pin.name) }}</p>
+                <p class="mb-0 text-muted smaller d-flex align-items-center mt-1 text-truncate">
+                  <i class="fas fa-file me-1 smaller flex-shrink-0"></i>
+                  <span class="text-truncate">{{ pin.source || 'local' }} file</span>
+                </p>
+              </div>
+            </div>
+          </a>
+        </div>
       </div>
     </div>
   </div>
@@ -209,8 +260,28 @@ const filteredPins = computed(() => {
   if (activeFilters.value.length === 0) {
     return props.pins;
   }
-  
   return props.pins.filter(pin => activeFilters.value.includes(pin.type));
+});
+
+// Separate pins into geolocated and non-geolocated
+const geolocatedPins = computed(() => {
+  return filteredPins.value.filter(pin => {
+    // Check if pin has both latitude and longitude coordinates
+    return pin.latitude !== undefined && 
+           pin.longitude !== undefined && 
+           pin.latitude !== null && 
+           pin.longitude !== null;
+  }).sort((a, b) => a.distance - b.distance); // Sort by distance
+});
+
+const nonGeolocatedPins = computed(() => {
+  return filteredPins.value.filter(pin => {
+    // Check if pin is missing latitude or longitude
+    return pin.latitude === undefined || 
+           pin.longitude === undefined || 
+           pin.latitude === null || 
+           pin.longitude === null;
+  });
 });
 
 // Count pins for each file type
