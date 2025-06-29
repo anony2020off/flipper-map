@@ -6,7 +6,7 @@
         <div class="d-flex align-items-center justify-content-center bg-white rounded p-2" style="width: 40px; height: 40px;">
           <i class="fas fa-map-marker-alt text-primary fs-5"></i>
         </div>
-        <h1 class="fs-5 fw-bold mb-0">SubGHz Map</h1>
+        <h1 class="fs-5 fw-bold mb-0">Flipper Map</h1>
       </div>
       <button @click="toggleTheme" class="btn btn-sm btn-outline-light rounded-circle">
         <i :class="['fas', isDarkTheme ? 'fa-sun' : 'fa-moon']"></i>
