@@ -114,54 +114,34 @@
       </div>
       
       <div v-else class="list-group list-group-flush">
-        <!-- Group pins by directory -->
-        <div 
-          v-for="(group, directory) in groupedPins" 
-          :key="directory"
-          class="directory-group"
+        <!-- Single list of pins -->
+        <a 
+          v-for="pin in filteredPins" 
+          :key="pin.path"
+          href="#"
+          class="list-group-item list-group-item-action px-3 py-3"
+          :class="{'active': selectedPin && selectedPin.path === pin.path}"
+          @click.prevent="selectPin(pin)"
         >
-          <div class="p-3 bg-light bg-opacity-50 d-flex justify-content-between align-items-center">
-            <div class="d-flex align-items-center">
-              <span class="d-flex align-items-center justify-content-center bg-warning bg-opacity-10 rounded-circle me-2" style="width: 24px; height: 24px;">
-                <i class="fas fa-folder text-warning small"></i>
-              </span>
-              <h6 class="small fw-medium text-truncate mb-0">{{ formatDirectory(directory) }}</h6>
-            </div>
-            <span class="badge bg-secondary rounded-pill">
-              {{ group.length }}
-            </span>
-          </div>
-          
-          <div class="list-group list-group-flush">
-            <a 
-              v-for="pin in group" 
-              :key="pin.path"
-              href="#"
-              class="list-group-item list-group-item-action px-3 py-3"
-              :class="{'active': selectedPin && selectedPin.path === pin.path}"
-              @click.prevent="selectPin(pin)"
+          <div class="d-flex align-items-center gap-3">
+            <div 
+              class="d-flex align-items-center justify-content-center rounded-circle shadow-sm" 
+              :style="{ backgroundColor: fileStore.getFileColor(pin.type), width: '40px', height: '40px' }"
             >
-              <div class="d-flex align-items-center gap-3">
-                <div 
-                  class="d-flex align-items-center justify-content-center rounded-circle shadow-sm" 
-                  :style="{ backgroundColor: fileStore.getFileColor(pin.type), width: '40px', height: '40px' }"
-                >
-                  <i :class="['fas', `fa-${fileStore.getFileIcon(pin.type)}`, 'text-white']"></i>
-                </div>
-                <div class="flex-grow-1 min-width-0">
-                  <p class="mb-0 small fw-medium text-truncate">{{ pin.name }}</p>
-                  <p v-if="pin.distance" class="mb-0 text-muted smaller d-flex align-items-center mt-1">
-                    <i class="fas fa-route me-1 smaller"></i>
-                    {{ pin.distance.toFixed(2) }} km away
-                  </p>
-                </div>
-                <div>
-                  <i class="fas fa-chevron-right text-muted"></i>
-                </div>
-              </div>
-            </a>
+              <i :class="['fas', `fa-${fileStore.getFileIcon(pin.type)}`, 'text-white']"></i>
+            </div>
+            <div class="flex-grow-1 min-width-0">
+              <p class="mb-0 small fw-medium text-truncate">{{ pin.name }}</p>
+              <p v-if="pin.distance" class="mb-0 text-muted smaller d-flex align-items-center mt-1">
+                <i class="fas fa-route me-1 smaller"></i>
+                {{ pin.distance < 1 ? `${(pin.distance * 1000).toFixed(0)} m` : `${pin.distance.toFixed(2)} km` }} away
+              </p>
+            </div>
+            <div>
+              <i class="fas fa-chevron-right text-muted"></i>
+            </div>
           </div>
-        </div>
+        </a>
       </div>
     </div>
   </div>
@@ -219,30 +199,6 @@ const filteredPins = computed(() => {
   
   return props.pins.filter(pin => activeFilters.value.includes(pin.type));
 });
-
-// Group pins by directory
-const groupedPins = computed(() => {
-  const groups = {};
-  
-  filteredPins.value.forEach(pin => {
-    const directory = pin.directory || '/';
-    if (!groups[directory]) {
-      groups[directory] = [];
-    }
-    groups[directory].push(pin);
-  });
-  
-  return groups;
-});
-
-// Format directory name for display
-const formatDirectory = (directory) => {
-  if (directory === '/') return 'Root';
-  
-  // Remove leading slash and replace remaining slashes with ' > '
-  const formatted = directory.startsWith('/') ? directory.substring(1) : directory;
-  return formatted.replace(/\//g, ' > ');
-};
 
 // Count pins for each file type
 const getFilterCount = (fileType) => {
