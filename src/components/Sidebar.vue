@@ -8,8 +8,14 @@
         </div>
         <h1 class="fs-5 fw-bold mb-0">Flipper Map</h1>
       </div>
+      <!-- Theme toggle button (temporarily removed)
       <button @click="toggleTheme" class="btn btn-sm btn-outline-light rounded-circle">
         <i :class="['fas', isDarkTheme ? 'fa-sun' : 'fa-moon']"></i>
+      </button>
+      -->
+      <button class="btn btn-sm btn-light d-flex align-items-center gap-1">
+        <i class="fas fa-plug"></i>
+        <span>Connect</span>
       </button>
     </div>
     
