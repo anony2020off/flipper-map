@@ -96,11 +96,12 @@ const handlePinSelect = (pin) => {
       @search="handleSearch" 
       :searchQuery="searchQuery"
       @select-pin="handlePinSelect"
+      v-model:selectedPin="selectedPin"
     />
     <div class="flex-grow-1 position-relative h-100">
       <MapView 
         :pins="filteredPins" 
-        :selectedPin="selectedPin"
+        v-model:selectedPin="selectedPin"
       />
     </div>
     <LoadingIndicator 

@@ -19,9 +19,7 @@
         :class="['btn btn-sm d-flex align-items-center gap-1', 
                 flipperStore.isConnected ? 'btn-light' : 'btn-light']">
         <i :class="['fas', 
-                  flipperStore.isSyncing ? 'fa-sync fa-spin' : 
-                  (flipperStore.isConnected ? 'fa-check' : 'fa-plug'), 
-                  flipperStore.isConnecting ? 'fa-spin' : '']"></i>
+                  flipperStore.isSyncing ? 'fa-sync fa-spin' : (flipperStore.isConnected ? 'fa-check' : (flipperStore.isConnecting ? 'fa-spinner fa-spin' : 'fa-plug'))]"></i>
         <span>
           {{ flipperStore.isSyncing ? 'Syncing' : 
              (flipperStore.isConnected ? 'Connected' : 
@@ -234,17 +232,20 @@ const props = defineProps({
   searchQuery: {
     type: String,
     default: ''
+  },
+  selectedPin: {
+    type: Object,
+    default: null
   }
 });
 
-const emit = defineEmits(['search', 'select-pin']);
+const emit = defineEmits(['search', 'select-pin', 'update:selectedPin']);
 
 const locationStore = useLocationStore();
 const flipperStore = useFlipperStore();
 const fileStore = useFileStore();
 const searchInput = ref(props.searchQuery);
 const activeFilters = ref([]);
-const selectedPin = ref(null);
 const isDarkTheme = ref(false);
 const showLocationPopover = ref(false);
 
@@ -338,8 +339,8 @@ const removeFileExtension = (filename) => {
 
 // Select a pin
 const selectPin = (pin) => {
-  selectedPin.value = pin;
   emit('select-pin', pin);
+  emit('update:selectedPin', pin);
 };
 
 // Toggle between light and dark theme

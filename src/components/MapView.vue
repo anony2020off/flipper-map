@@ -9,6 +9,9 @@ import { ref, onMounted, watch } from 'vue';
 import { useLocationStore } from '../stores/location';
 import { useFileStore } from '../stores/files';
 
+// Define emits
+const emit = defineEmits(['update:selectedPin']);
+
 const props = defineProps({
   pins: {
     type: Array,
@@ -131,20 +134,30 @@ const addMarkers = () => {
     let isHovered = false;
     let hasOpenInfoWindow = false;
     
+    // Store these properties on the marker object for reference
+    marker.isHovered = false;
+    marker.hasOpenInfoWindow = false;
+    marker.pinType = pin.type;
+    marker.isSelected = isSelected;
+    
     // Add hover effect using mouseover and mouseout events
     marker.addListener('mouseover', () => {
-      if (!isSelected) {
-        isHovered = true;
+      if (!marker.isSelected && !marker.hasOpenInfoWindow) {
+        marker.isHovered = true;
         marker.setIcon(getMarkerIcon(pin.type, true)); // Use the selected icon style for hover
         marker.setZIndex(500); // Bring hovered marker above normal markers but below selected
       }
     });
     
     marker.addListener('mouseout', () => {
-      if (!isSelected && isHovered && !hasOpenInfoWindow) {
-        isHovered = false;
-        marker.setIcon(getMarkerIcon(pin.type, false)); // Restore normal icon
-        marker.setZIndex(1); // Restore normal z-index
+      // Always reset hover state on mouseout, regardless of info window state
+      if (!marker.isSelected) {
+        marker.isHovered = false;
+        // Only change the icon if this marker doesn't have an open info window
+        if (!marker.hasOpenInfoWindow) {
+          marker.setIcon(getMarkerIcon(pin.type, false)); // Restore normal icon
+          marker.setZIndex(1); // Restore normal z-index
+        }
       }
     });
     
@@ -155,7 +168,7 @@ const addMarkers = () => {
         markers.value.forEach(m => {
           if (m.hasOpenInfoWindow) {
             m.hasOpenInfoWindow = false;
-            if (!m.isSelected) {
+            if (!m.isSelected && !m.isHovered) {
               m.setIcon(getMarkerIcon(m.pinType, false));
               m.setZIndex(1);
             }
@@ -168,10 +181,25 @@ const addMarkers = () => {
       infoWindow.open(map.value, marker);
       currentInfoWindow = infoWindow;
       
-      // Mark this marker as having an open info window and keep it in hovered state
-      hasOpenInfoWindow = true;
+      // Add close listener to the info window
+      google.maps.event.addListenerOnce(infoWindow, 'closeclick', () => {
+        // Reset marker states
+        marker.hasOpenInfoWindow = false;
+        marker.isHovered = false;
+        marker.setIcon(getMarkerIcon(pin.type, false));
+        marker.setZIndex(1);
+        
+        // Reset selected pin in parent component
+        emit('update:selectedPin', null);
+        
+        // Clear current info window reference
+        currentInfoWindow = null;
+      });
+      
+      // Mark this marker as having an open info window
       marker.hasOpenInfoWindow = true;
-      marker.pinType = pin.type; // Store the pin type for reference
+      // Reset hover state when info window is opened
+      marker.isHovered = false;
       
       // Apply custom styling to the InfoWindow header after it's opened
       setTimeout(() => {
@@ -469,7 +497,7 @@ watch(() => props.selectedPin, (newPin) => {
         markers.value.forEach(m => {
           if (m.hasOpenInfoWindow) {
             m.hasOpenInfoWindow = false;
-            if (!m.isSelected) {
+            if (!m.isSelected && !m.isHovered) {
               m.setIcon(getMarkerIcon(m.pinType, false));
               m.setZIndex(1);
             }
@@ -491,6 +519,21 @@ watch(() => props.selectedPin, (newPin) => {
       // Open the info window
       infoWindow.open(map.value, marker);
       currentInfoWindow = infoWindow;
+      
+      // Add close listener to the info window
+      google.maps.event.addListenerOnce(infoWindow, 'closeclick', () => {
+        // Reset marker states
+        marker.hasOpenInfoWindow = false;
+        marker.isHovered = false;
+        marker.setIcon(getMarkerIcon(newPin.type, false));
+        marker.setZIndex(1);
+        
+        // Reset selected pin in parent component
+        emit('update:selectedPin', null);
+        
+        // Clear current info window reference
+        currentInfoWindow = null;
+      });
       
       // Mark this marker as having an open info window
       marker.hasOpenInfoWindow = true;
