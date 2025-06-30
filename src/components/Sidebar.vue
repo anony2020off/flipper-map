@@ -85,32 +85,7 @@
       </div>
     </div>
     
-    <!-- User location info -->
-    <div class="p-3 border-bottom">
-      <div class="d-flex justify-content-between align-items-center mb-2">
-        <h6 class="text-uppercase fw-semibold text-muted small mb-0">Your Location</h6>
-        <span class="d-flex align-items-center justify-content-center custom-primary-bg-light rounded-circle" style="width: 24px; height: 24px;">
-          <i class="fas fa-location-dot custom-primary-text small"></i>
-        </span>
-      </div>
-      
-      <template v-if="locationStore.userLocation">
-        <div class="mt-2 p-3 bg-light border rounded shadow-sm">
-          <div class="row g-2">
-            <div class="col-5 text-muted small fw-medium">Latitude:</div>
-            <div class="col-7 small font-monospace">{{ locationStore.userLocation.latitude.toFixed(6) }}</div>
-            <div class="col-5 text-muted small fw-medium">Longitude:</div>
-            <div class="col-7 small font-monospace">{{ locationStore.userLocation.longitude.toFixed(6) }}</div>
-          </div>
-        </div>
-      </template>
-      <div v-else-if="locationStore.locationError" class="mt-2 p-3 bg-danger bg-opacity-10 border border-danger border-opacity-25 rounded text-danger small">
-        <i class="fas fa-exclamation-triangle me-1"></i> {{ locationStore.locationError }}
-      </div>
-      <div v-else class="mt-2 p-3 custom-primary-bg-light border custom-primary-border rounded custom-primary-text small d-flex align-items-center">
-        <i class="fas fa-spinner fa-spin me-2"></i> Getting your location...
-      </div>
-    </div>
+    <!-- User location section removed -->
     
     <!-- Pins list -->
     <div class="flex-grow-1 overflow-auto">
@@ -126,7 +101,36 @@
         <!-- Geolocated pins section -->
         <div class="p-3 border-bottom">
           <div class="d-flex justify-content-between align-items-center">
-            <h6 class="text-uppercase fw-semibold text-muted small mb-0">Nearby Pins</h6>
+            <div class="d-flex align-items-center gap-2">
+              <h6 class="text-uppercase fw-semibold text-muted small mb-0">Nearby Pins</h6>
+              <!-- Pin icon with location popover -->
+              <div v-if="locationStore.userLocation" class="position-relative">
+                <span 
+                  class="d-flex align-items-center justify-content-center custom-primary-bg-light rounded-circle" 
+                  style="width: 24px; height: 24px; cursor: pointer;"
+                  @mouseenter="showLocationPopover = true"
+                  @mouseleave="showLocationPopover = false"
+                >
+                  <i class="fas fa-location-dot custom-primary-text small"></i>
+                </span>
+                <!-- Location popover -->
+                <div 
+                  v-if="showLocationPopover" 
+                  class="position-absolute start-100 top-0 ms-2 p-2 bg-white border rounded shadow-sm" 
+                  style="z-index: 1000; width: 180px;"
+                >
+                  <div class="small fw-medium mb-1">Your Location:</div>
+                  <div class="row g-1 mb-1">
+                    <div class="col-3 text-muted small font-monospace">Lat:</div>
+                    <div class="col-9 small font-monospace">{{ locationStore.userLocation.latitude.toFixed(6) }}</div>
+                  </div>
+                  <div class="row g-1">
+                    <div class="col-3 text-muted small font-monospace">Lng:</div>
+                    <div class="col-9 small font-monospace">{{ locationStore.userLocation.longitude.toFixed(6) }}</div>
+                  </div>
+                </div>
+              </div>
+            </div>
             <span class="badge bg-secondary rounded-pill">
               {{ geolocatedPins.length }}
             </span>
@@ -242,6 +246,7 @@ const searchInput = ref(props.searchQuery);
 const activeFilters = ref([]);
 const selectedPin = ref(null);
 const isDarkTheme = ref(false);
+const showLocationPopover = ref(false);
 
 // Handle search input
 const handleSearch = () => {
