@@ -109,7 +109,8 @@ const addMarkers = () => {
         map: map.value,
         title: pin.name,
         icon: getMarkerIcon(pin.type, isSelected),
-        animation: isSelected ? google.maps.Animation.BOUNCE : null,
+        // Remove bounce animation for all markers
+        animation: null,
         zIndex: isSelected ? 1000 : 1 // Bring selected marker to front
     });
     
@@ -460,8 +461,82 @@ watch(() => props.selectedPin, (newPin) => {
     // Find and activate the marker for this pin
     const markerIndex = props.pins.findIndex(pin => pin.path === newPin.path);
     if (markerIndex >= 0 && markers.value[markerIndex]) {
-      // Trigger the click event on the marker
-      google.maps.event.trigger(markers.value[markerIndex], 'click');
+      const marker = markers.value[markerIndex];
+      
+      // Close any open info windows
+      if (currentInfoWindow) {
+        // Reset markers with open info windows
+        markers.value.forEach(m => {
+          if (m.hasOpenInfoWindow) {
+            m.hasOpenInfoWindow = false;
+            if (!m.isSelected) {
+              m.setIcon(getMarkerIcon(m.pinType, false));
+              m.setZIndex(1);
+            }
+          }
+        });
+        currentInfoWindow.close();
+      }
+      
+      // Find the info window for this marker
+      // We need to manually open the info window without triggering the click event
+      // which would cause the marker to bounce
+      const infoWindow = new google.maps.InfoWindow({
+        content: createInfoWindowContent(newPin),
+        maxWidth: 300,
+        pixelOffset: new google.maps.Size(0, -5),
+        ariaLabel: removeFileExtension(newPin.name)
+      });
+      
+      // Open the info window
+      infoWindow.open(map.value, marker);
+      currentInfoWindow = infoWindow;
+      
+      // Mark this marker as having an open info window
+      marker.hasOpenInfoWindow = true;
+      marker.pinType = newPin.type;
+      
+      // Set the marker as selected
+      marker.setIcon(getMarkerIcon(newPin.type, true));
+      marker.setZIndex(1000);
+      
+      // Apply custom styling to the InfoWindow header after it's opened
+      setTimeout(() => {
+        const infoWindows = document.querySelectorAll('.gm-style-iw');
+        if (infoWindows.length > 0) {
+          const lastInfoWindow = infoWindows[infoWindows.length - 1];
+          
+          // Add custom title to the InfoWindow
+          const existingTitle = lastInfoWindow.querySelector('.custom-iw-title');
+          if (!existingTitle) {
+            const titleDiv = document.createElement('div');
+            titleDiv.className = 'custom-iw-title';
+            titleDiv.style.cssText = 'position: absolute; top: 4px; left: 15px; display: flex; align-items: center; margin-top: 8px; z-index: 10;';
+            
+            // Add icon
+            const iconDiv = document.createElement('div');
+            const fileTypeColor = fileStore.getFileColor(newPin.type);
+            iconDiv.style.cssText = `background-color: ${fileTypeColor}; width: 24px; height: 24px; border-radius: 50%; 
+                                    display: flex; align-items: center; justify-content: center; margin-right: 8px; flex-shrink: 0;`;
+            
+            const icon = document.createElement('i');
+            const iconName = fileStore.getFileIcon(newPin.type);
+            icon.className = `fas fa-${iconName}`;
+            icon.style.cssText = 'color: white; font-size: 12px;';
+            
+            iconDiv.appendChild(icon);
+            titleDiv.appendChild(iconDiv);
+            
+            // Add title text
+            const titleText = document.createElement('span');
+            titleText.textContent = removeFileExtension(newPin.name);
+            titleText.style.cssText = 'font-weight: 600; font-size: 14px; color: #333; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px;';
+            
+            titleDiv.appendChild(titleText);
+            lastInfoWindow.appendChild(titleDiv);
+          }
+        }
+      }, 100);
     }
   }
 });
