@@ -511,6 +511,10 @@ export const useFlipperStore = defineStore('flipper', () => {
     
     try {
       isProcessingQueue.value = true;
+      // Ensure syncing state is true while processing files
+      isSyncing.value = true;
+      
+      console.log(`Starting to process ${fileReadQueue.value.length} files in queue`);
       
       while (fileReadQueue.value.length > 0) {
         // Get next file from queue
@@ -523,6 +527,8 @@ export const useFlipperStore = defineStore('flipper', () => {
         // Wait between file reads to avoid overwhelming the device
         await new Promise(resolve => setTimeout(resolve, 500));
       }
+      
+      console.log("Finished processing all files in queue");
     } catch (error) {
       console.error("Error processing file queue:", error);
     } finally {
@@ -530,10 +536,14 @@ export const useFlipperStore = defineStore('flipper', () => {
       
       // Only set syncing to false if both queues are empty
       if (fileReadQueue.value.length === 0 && directoryQueue.value.length === 0) {
+        console.log("All files and directories processed, syncing complete");
         isSyncing.value = false;
       } else if (directoryQueue.value.length > 0 && !isProcessingDirectories.value) {
         // If we have directories to process and aren't already processing them
+        console.log(`File queue empty but ${directoryQueue.value.length} directories remain, continuing processing`);
         processDirectoryQueue();
+      } else {
+        console.log(`Queue processing complete, syncing state: ${isSyncing.value}`);
       }
     }
   };
@@ -544,6 +554,8 @@ export const useFlipperStore = defineStore('flipper', () => {
     
     try {
       isProcessingDirectories.value = true;
+      // Ensure syncing state is true while processing directories
+      isSyncing.value = true;
       
       while (directoryQueue.value.length > 0) {
         // Get next directory from queue
@@ -565,6 +577,16 @@ export const useFlipperStore = defineStore('flipper', () => {
       console.error("Error processing directory queue:", error);
     } finally {
       isProcessingDirectories.value = false;
+      
+      // Only set syncing to false if the file queue is also empty
+      // This ensures we keep syncing state true until all files are processed
+      if (fileReadQueue.value.length === 0) {
+        console.log("Directory queue processing complete, no files to read");
+        isSyncing.value = false;
+      } else {
+        console.log(`Directory queue processing complete, ${fileReadQueue.value.length} files to read`);
+        // Keep syncing state true as we still have files to process
+      }
     }
   };
   
@@ -573,8 +595,9 @@ export const useFlipperStore = defineStore('flipper', () => {
     if (!writer.value || !isConnected.value) return;
     
     try {
-      // Set syncing state to true
+      // Set syncing state to true at the start of the process
       isSyncing.value = true;
+      console.log("Starting file sync process, setting syncing state to true");
       
       // Clear existing file list and queue
       fileList.value = [];
@@ -596,20 +619,27 @@ export const useFlipperStore = defineStore('flipper', () => {
       }
       
       // Process the directory queue first
+      console.log("Processing directory queue...");
       await processDirectoryQueue();
       
-      console.log(`Total files found: ${fileList.value.length}`);
+      console.log(`Directory processing complete. Total files found: ${fileList.value.length}`);
       console.log(`Files in read queue: ${fileReadQueue.value.length}`);
       
       // Process the file read queue
       if (fileReadQueue.value.length > 0) {
+        console.log("Starting to process file queue...");
         processFileQueue();
+        // Note: We don't set isSyncing to false here because processFileQueue will handle that
+        // when it's done processing all files
       } else {
         // No files to read and no directories to process, set syncing to false
+        console.log("No files to read, setting syncing state to false");
         isSyncing.value = false;
       }
     } catch (error) {
       console.error("Error listing files:", error);
+      // Make sure to set syncing to false if there's an error
+      isSyncing.value = false;
       return [];
     }
   };
