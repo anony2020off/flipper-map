@@ -13,7 +13,9 @@ export const useFlipperStore = defineStore('flipper', () => {
   const fileList = ref([]);
   const currentDirectory = ref('/ext/subghz'); // Track current directory
   const fileReadQueue = ref([]); // Queue for files to read
+  const directoryQueue = ref([]); // Queue for directories to list
   const isProcessingQueue = ref(false); // Flag to track if we're processing the queue
+  const isProcessingDirectories = ref(false); // Flag to track if we're processing directories
   
   // Current file being processed
   const currentFile = ref({
@@ -154,15 +156,25 @@ export const useFlipperStore = defineStore('flipper', () => {
     // Check for file listing entries in different formats
     if (line.includes('type: file') || line.match(/^\s*\[F\]/) || line.match(/^\s*\[D\]/)) {
       try {
-        // Skip directory entries
-        if (line.match(/^\s*\[D\]/)) {
-          console.log("Skipping directory entry:", line);
-          return;
-        }
-        
         let filename = '';
         let path = '';
-        let currentDir = '';
+        let isDirectory = false;
+        
+        // Check if this is a directory entry
+        if (line.match(/^\s*\[D\]/)) {
+          isDirectory = true;
+          // Parse format: [D] directoryname
+          const dirMatch = line.match(/^\s*\[D\]\s+(.+?)\s*$/);
+          if (dirMatch && dirMatch[1]) {
+            filename = dirMatch[1];
+            path = `${currentDirectory.value}/${filename}`;
+            console.log(`Found directory: ${path}`);
+            
+            // Queue this directory for listing
+            addDirectoryToQueue(path);
+            return;
+          }
+        }
         
         // Try to extract filename from JSON-like format
         const nameMatch = line.match(/name: "([^"]+)"/); 
@@ -270,16 +282,30 @@ export const useFlipperStore = defineStore('flipper', () => {
   // Extract coordinates from file output
   const extractCoordinatesFromOutput = (line) => {
     // Append to current file content
+    if (!currentFile.value.name) {
+      // If no current file is being processed, ignore this line
+      console.log("Received coordinate data but no current file is being processed");
+      return;
+    }
+    
     currentFile.value.content += line + '\n';
     
-    // Check if we have both latitude and longitude
-    const content = currentFile.value.content;
-    const latitudeMatch = content.match(/Latitude:\s*(-?\d+\.\d+)/);
-    const longitudeMatch = content.match(/Longitude:\s*(-?\d+\.\d+)/);
+    // Check for coordinate patterns in this specific line
+    let latitudeMatch = line.match(/Latitude:\s*(-?\d+\.\d+)/);
+    let longitudeMatch = line.match(/Longitude:\s*(-?\d+\.\d+)/);
+    
+    // If not found in this line, check the entire accumulated content
+    if (!latitudeMatch || !longitudeMatch) {
+      const content = currentFile.value.content;
+      latitudeMatch = latitudeMatch || content.match(/Latitude:\s*(-?\d+\.\d+)/);
+      longitudeMatch = longitudeMatch || content.match(/Longitude:\s*(-?\d+\.\d+)/);
+    }
     
     if (latitudeMatch && longitudeMatch) {
       const latitude = parseFloat(latitudeMatch[1]);
       const longitude = parseFloat(longitudeMatch[1]);
+      
+      console.log(`Extracted coordinates for ${currentFile.value.path}: ${latitude}, ${longitude}`);
       
       // Add file to list with coordinates
       addFileToList(
@@ -332,11 +358,55 @@ export const useFlipperStore = defineStore('flipper', () => {
     }
   };
   
+  // Directories to ignore when listing files
+  const ignoredDirectories = [
+    '/ext/subghz/assets',
+    '/ext/nfc/assets',
+    '/ext/subghz/samples',
+    '/ext/subghz/blocked',
+    '/ext/subghz/dangerous',
+    '/ext/nfc/samples',
+    '/ext/lfrfid/samples'
+  ];
+  
+  // Add directory to queue for listing
+  const addDirectoryToQueue = (dirPath) => {
+    // Skip if already in queue or if it's not in one of the allowed base directories
+    const allowedBaseDirs = ['/ext/subghz', '/ext/lfrfid', '/ext/nfc'];
+    const isInAllowedDir = allowedBaseDirs.some(dir => dirPath.startsWith(dir));
+    
+    if (!isInAllowedDir) {
+      console.log(`Skipping directory outside allowed paths: ${dirPath}`);
+      return;
+    }
+    
+    // Skip if directory is in the ignored list
+    if (ignoredDirectories.some(dir => dirPath.startsWith(dir))) {
+      console.log(`Skipping ignored directory: ${dirPath}`);
+      return;
+    }
+    
+    // Check if already in queue
+    if (directoryQueue.value.includes(dirPath)) {
+      console.log(`Directory already in queue: ${dirPath}`);
+      return;
+    }
+    
+    // Add to queue
+    directoryQueue.value.push(dirPath);
+    console.log(`Added directory to queue: ${dirPath} (${directoryQueue.value.length} in queue)`);
+    
+    // Start processing directory queue if not already processing
+    if (!isProcessingDirectories.value && isConnected.value) {
+      processDirectoryQueue();
+    }
+  };
+  
   // Add file to read queue
   const addToReadQueue = (path, filename, fileType) => {
     // Add to queue
     fileReadQueue.value.push({ path, filename, fileType });
-    console.log(`Added to read queue: ${filename} (${fileReadQueue.value.length} files in queue)`);
+    console.log(`Added to read queue: ${filename} (${fileReadQueue.value.length} in queue)`);
     
     // Start processing queue if not already processing
     if (!isProcessingQueue.value) {
@@ -366,7 +436,43 @@ export const useFlipperStore = defineStore('flipper', () => {
       console.error("Error processing file queue:", error);
     } finally {
       isProcessingQueue.value = false;
-      isSyncing.value = false; // Set syncing to false when queue processing is done
+      
+      // Only set syncing to false if both queues are empty
+      if (fileReadQueue.value.length === 0 && directoryQueue.value.length === 0) {
+        isSyncing.value = false;
+      } else if (directoryQueue.value.length > 0 && !isProcessingDirectories.value) {
+        // If we have directories to process and aren't already processing them
+        processDirectoryQueue();
+      }
+    }
+  };
+  
+  // Process directory queue
+  const processDirectoryQueue = async () => {
+    if (isProcessingDirectories.value || directoryQueue.value.length === 0) return;
+    
+    try {
+      isProcessingDirectories.value = true;
+      
+      while (directoryQueue.value.length > 0) {
+        // Get next directory from queue
+        const dirPath = directoryQueue.value.shift();
+        console.log(`Processing directory from queue: ${dirPath} (${directoryQueue.value.length} remaining)`);
+        
+        // Set current directory
+        currentDirectory.value = dirPath;
+        
+        // Send command to list files
+        const quotedPath = dirPath.includes(' ') ? `"${dirPath}"` : dirPath;
+        await writer.value.write(`storage list ${quotedPath}\r\n`);
+        
+        // Wait to ensure all files are listed
+        await new Promise(resolve => setTimeout(resolve, 2000));
+      }
+    } catch (error) {
+      console.error("Error processing directory queue:", error);
+    } finally {
+      isProcessingDirectories.value = false;
     }
   };
   
@@ -381,6 +487,7 @@ export const useFlipperStore = defineStore('flipper', () => {
       // Clear existing file list and queue
       fileList.value = [];
       fileReadQueue.value = [];
+      directoryQueue.value = [];
       
       // Process directories sequentially with proper waiting
       const directories = [
@@ -407,8 +514,20 @@ export const useFlipperStore = defineStore('flipper', () => {
       
       console.log(`Total files found: ${fileList.value.length}`);
       console.log(`Files in read queue: ${fileReadQueue.value.length}`);
+      console.log(`Directories in queue: ${directoryQueue.value.length}`);
       
-      return fileList.value;
+      // Process the directory queue first if not empty
+      if (directoryQueue.value.length > 0) {
+        await processDirectoryQueue();
+      }
+      
+      // Process the file read queue
+      if (fileReadQueue.value.length > 0) {
+        processFileQueue();
+      } else if (directoryQueue.value.length === 0) {
+        // No files to read and no directories to process, set syncing to false
+        isSyncing.value = false;
+      }
     } catch (error) {
       console.error("Error listing files:", error);
       return [];

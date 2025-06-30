@@ -273,32 +273,49 @@ const filteredPins = computed(() => {
 // Separate pins into geolocated and non-geolocated
 const geolocatedPins = computed(() => {
   return filteredPins.value.filter(pin => {
-    // Check if pin has original latitude and longitude coordinates (not default values)
-    // We need to check if the coordinates were in the original file
-    return pin.hasOwnProperty('latitude') && 
-           pin.hasOwnProperty('longitude') && 
-           pin.latitude !== null && 
-           pin.longitude !== null &&
-           // Check that we're not using default coordinates
-           !(pin.source === 'flipper' && pin.latitude === 0 && pin.longitude === 0) &&
-           !(pin.source === 'flipper' && 
-              pin.latitude === locationStore.userLocation?.latitude && 
-              pin.longitude === locationStore.userLocation?.longitude);
-  }).sort((a, b) => a.distance - b.distance); // Sort by distance
+    // Check if pin has valid latitude and longitude coordinates (not default values)
+    const hasValidCoordinates = 
+      // Must have both coordinate properties
+      pin.hasOwnProperty('latitude') && 
+      pin.hasOwnProperty('longitude') && 
+      // Values must not be null
+      pin.latitude !== null && 
+      pin.longitude !== null &&
+      // Values must be numeric
+      !isNaN(Number(pin.latitude)) && 
+      !isNaN(Number(pin.longitude)) &&
+      // Values must not be default values
+      !(Number(pin.latitude) === 0 && Number(pin.longitude) === 0) &&
+      // Values must not be user location (which might be assigned as default)
+      !(locationStore.userLocation && 
+        Number(pin.latitude) === Number(locationStore.userLocation.latitude) && 
+        Number(pin.longitude) === Number(locationStore.userLocation.longitude));
+      
+    return hasValidCoordinates;
+  }).sort((a, b) => (a.distance || Infinity) - (b.distance || Infinity)); // Sort by distance, handle undefined
 });
 
 const nonGeolocatedPins = computed(() => {
   return filteredPins.value.filter(pin => {
-    // Check if pin is missing original coordinates or has default values
-    return !pin.hasOwnProperty('latitude') || 
-           !pin.hasOwnProperty('longitude') || 
-           pin.latitude === null || 
-           pin.longitude === null ||
-           // Check for default coordinates
-           (pin.source === 'flipper' && pin.latitude === 0 && pin.longitude === 0) ||
-           (pin.source === 'flipper' && 
-            pin.latitude === locationStore.userLocation?.latitude && 
-            pin.longitude === locationStore.userLocation?.longitude);
+    // Check if pin is missing valid coordinates or has default values
+    const hasInvalidOrMissingCoordinates = 
+      // Missing coordinate properties
+      !pin.hasOwnProperty('latitude') || 
+      !pin.hasOwnProperty('longitude') || 
+      // Null values
+      pin.latitude === null || 
+      pin.longitude === null ||
+      // Non-numeric values
+      isNaN(Number(pin.latitude)) || 
+      isNaN(Number(pin.longitude)) ||
+      // Default coordinates (0,0)
+      (Number(pin.latitude) === 0 && Number(pin.longitude) === 0) ||
+      // User location as default
+      (locationStore.userLocation && 
+       Number(pin.latitude) === Number(locationStore.userLocation.latitude) && 
+       Number(pin.longitude) === Number(locationStore.userLocation.longitude));
+      
+    return hasInvalidOrMissingCoordinates;
   });
 });
 
