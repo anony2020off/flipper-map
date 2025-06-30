@@ -35,13 +35,38 @@ const initMap = () => {
     return;
   }
 
+  // Map styles to hide all features
+  const hideMapStyles = [
+    {
+      featureType: "poi",
+      elementType: "all",
+      stylers: [{ visibility: "off" }]
+    },
+    {
+      featureType: "transit",
+      elementType: "all",
+      stylers: [{ visibility: "off" }]
+    },
+    {
+      featureType: "road",
+      elementType: "all",
+      stylers: [{ visibility: "simplified" }]
+    },
+    {
+      featureType: "landscape",
+      elementType: "all",
+      stylers: [{ visibility: "simplified" }]
+    }
+  ];
+
   const mapOptions = {
     center: { lat: 41.72533845455064, lng: 44.77959291404671 }, // Default center (Google Maps API requires lat/lng format)
     zoom: 12,
     mapTypeId: google.maps.MapTypeId.ROADMAP,
     mapTypeControl: true,
     streetViewControl: false,
-    fullscreenControl: true
+    fullscreenControl: true,
+    styles: hideMapStyles // Apply the styles to hide map features
   };
 
   map.value = new google.maps.Map(document.getElementById('map'), mapOptions);
