@@ -152,85 +152,131 @@ export const useFlipperStore = defineStore('flipper', () => {
   // Process output from Flipper
   const processFlipperOutput = (line) => {
     console.log("Flipper output:", line);
+    console.log("Current directory:", currentDirectory.value);
     
-    // Check for file listing entries in different formats
-    if (line.includes('type: file') || line.match(/^\s*\[F\]/) || line.match(/^\s*\[D\]/)) {
+    // Check if this is a directory entry [D]
+    if (line.match(/^\s*\[D\]/)) {
       try {
-        let filename = '';
-        let path = '';
-        let isDirectory = false;
-        
-        // Check if this is a directory entry
-        if (line.match(/^\s*\[D\]/)) {
-          isDirectory = true;
-          // Parse format: [D] directoryname
-          const dirMatch = line.match(/^\s*\[D\]\s+(.+?)\s*$/);
-          if (dirMatch && dirMatch[1]) {
-            filename = dirMatch[1];
-            path = `${currentDirectory.value}/${filename}`;
-            console.log(`Found directory: ${path}`);
-            
-            // Queue this directory for listing
-            addDirectoryToQueue(path);
+        // Parse format: [D] directoryname
+        const dirMatch = line.match(/^\s*\[D\]\s+(.+?)\s*$/);
+        if (dirMatch && dirMatch[1]) {
+          const dirName = dirMatch[1];
+          // Skip if directory name contains a slash (shouldn't happen in normal listings)
+          if (dirName.includes('/')) {
+            console.log(`Skipping directory with slash in name: ${dirName}`);
             return;
           }
+          
+          // Construct the full directory path
+          const dirPath = `${currentDirectory.value}/${dirName}`;
+          console.log(`Found directory: ${dirPath}`);
+          
+          // Queue this directory for listing
+          addDirectoryToQueue(dirPath);
+        }
+        return;
+      } catch (error) {
+        console.error("Error processing directory entry:", error);
+      }
+    }
+    
+    // Check if this is a file entry [F]
+    if (line.match(/^\s*\[F\]/)) {
+      try {
+        // Parse format: [F] filename.sub 123b or [F] File With Spaces.sub 123b
+        const fileMatch = line.match(/^\s*\[F\]\s+(.+?)\s+\d+b$/);
+        if (fileMatch && fileMatch[1]) {
+          const filename = fileMatch[1];
+          
+          // Skip if filename contains a slash (shouldn't happen in normal listings)
+          if (filename.includes('/')) {
+            console.log(`Skipping file with slash in name: ${filename}`);
+            return;
+          }
+          
+          // Construct the full file path
+          const path = `${currentDirectory.value}/${filename}`;
+          console.log(`Found file: ${path}`);
+          
+          // Determine file type based on path and extension
+          let fileType = 'unknown';
+          if (path.includes('/ext/subghz') || path.includes('subghz') || filename.endsWith('.sub')) {
+            fileType = 'subghz';
+          } else if (path.includes('/ext/lfrfid') || path.includes('lfrfid') || filename.endsWith('.rfid')) {
+            fileType = 'rfid';
+          } else if (path.includes('/ext/nfc') || path.includes('nfc') || filename.endsWith('.nfc')) {
+            fileType = 'nfc';
+          } else if (filename.endsWith('.ir')) {
+            fileType = 'ir';
+          }
+          
+          // Ignore files that start with a dot (.)
+          if (filename.startsWith('.')) {
+            console.log(`Ignoring hidden file: ${filename}`);
+            return;
+          }
+          
+          // Add to read queue
+          addToReadQueue(path, filename, fileType);
+        }
+        return;
+      } catch (error) {
+        console.error("Error processing file entry:", error);
+      }
+    }
+    
+    // Check for JSON-like format
+    const nameMatch = line.match(/name: "([^"]+)"/); 
+    if (nameMatch && nameMatch[1]) {
+      try {
+        const filename = nameMatch[1];
+        let path = '';
+        
+        const pathMatch = line.match(/path: "([^"]+)"/);  
+        if (pathMatch && pathMatch[1]) {
+          path = pathMatch[1];
+        } else {
+          path = `${currentDirectory.value}/${filename}`;
         }
         
-        // Try to extract filename from JSON-like format
-        const nameMatch = line.match(/name: "([^"]+)"/); 
-        if (nameMatch && nameMatch[1]) {
-          filename = nameMatch[1];
-          const pathMatch = line.match(/path: "([^"]+)"/);  
-          if (pathMatch && pathMatch[1]) {
-            path = pathMatch[1];
-          }
-        } else {
-          // Parse format: [F] filename.sub 123b or [F] File With Spaces.sub 123b
-          const fileMatch = line.match(/^\s*\[F\]\s+(.+?)\s+\d+b$/);
-          if (fileMatch && fileMatch[1]) {
-            filename = fileMatch[1];
-            
-            // Use the tracked current directory
-            // Construct the path
-            path = `${currentDirectory.value}/${filename}`;
-          }
+        console.log(`Found file (JSON format): ${path}`);
+        
+        // Determine if this is a directory
+        const isDir = line.includes('type: dir');
+        if (isDir) {
+          addDirectoryToQueue(path);
+          return;
+        }
+        
+        // Determine file type
+        let fileType = 'unknown';
+        if (path.includes('/ext/subghz') || path.includes('subghz') || filename.endsWith('.sub')) {
+          fileType = 'subghz';
+        } else if (path.includes('/ext/lfrfid') || path.includes('lfrfid') || filename.endsWith('.rfid')) {
+          fileType = 'rfid';
+        } else if (path.includes('/ext/nfc') || path.includes('nfc') || filename.endsWith('.nfc')) {
+          fileType = 'nfc';
+        } else if (filename.endsWith('.ir')) {
+          fileType = 'ir';
         }
         
         // Ignore files that start with a dot (.)
-        if (filename && filename.startsWith('.')) {
+        if (filename.startsWith('.')) {
           console.log(`Ignoring hidden file: ${filename}`);
           return;
         }
         
-        // Determine file type based on path and extension
-        let fileType = 'unknown';
-        if (path.includes('/ext/subghz') || path.includes('subghz')) {
-          fileType = 'subghz';
-        } else if (path.includes('/ext/lfrfid') || path.includes('lfrfid')) {
-          fileType = 'rfid';
-        } else if (path.includes('/ext/nfc') || path.includes('nfc')) {
-          fileType = 'nfc';
-        }
-        
-        // Check file extension
-        if (filename.endsWith('.sub')) {
-          fileType = 'subghz';
-        } else if (filename.endsWith('.rfid')) {
-          fileType = 'rfid';
-        } else if (filename.endsWith('.nfc')) {
-          fileType = 'nfc';
-        }
-        
-        // Only process files with supported extensions
-        if (filename.endsWith('.sub') || filename.endsWith('.rfid') || filename.endsWith('.nfc')) {
-          // Add to file queue for processing
-          addToReadQueue(path, filename, fileType);
-        }
+        // Add to read queue
+        addToReadQueue(path, filename, fileType);
       } catch (error) {
-        console.error("Error parsing Flipper file entry:", error);
+        console.error("Error processing JSON entry:", error);
       }
-    } else if (line.includes('Latitude:') || line.includes('Longitude:')) {
+    }
+    
+    // Check for coordinate lines
+    if (line.toLowerCase().includes('latitude:') || line.toLowerCase().includes('longitude:')) {
       // This might be file content with coordinates
+      console.log(`Potential coordinate line found: ${line}`);
       extractCoordinatesFromOutput(line);
     }
   };
@@ -240,6 +286,13 @@ export const useFlipperStore = defineStore('flipper', () => {
     if (!writer.value || !isConnected.value) return;
     
     try {
+      // Use the exact path provided - no path manipulation
+      // This ensures we're reading from the exact location specified
+      // The path should already be correctly constructed by the processFlipperOutput function
+      
+      console.log(`Reading file: ${filename}`);
+      console.log(`Using path: ${path}`);
+      
       // Reset current file
       currentFile.value = {
         name: filename,
@@ -248,28 +301,28 @@ export const useFlipperStore = defineStore('flipper', () => {
         content: ''
       };
       
-      // Adjust path for storage read command
-      let adjustedPath = path;
-      if (!adjustedPath.startsWith('/')) {
-        adjustedPath = `/${adjustedPath}`;
-      }
-      console.log(`Reading file content for ${adjustedPath}`);
-      
-      // Quote the path to handle spaces
-      const quotedPath = adjustedPath.includes(' ') ? `"${adjustedPath}"` : adjustedPath;
+      // Quote path to handle spaces
+      const quotedPath = `"${path}"`;
       
       // Send command to read file
+      console.log(`Sending storage read command for: ${quotedPath}`);
       await writer.value.write(`storage read ${quotedPath}\r\n`);
       
       // Wait for file content to be processed
-      // The content will be processed in the readFromFlipper loop
-      // and coordinates extracted in extractCoordinatesFromOutput
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      console.log(`Waiting for file content to be processed for: ${filename}`);
+      await new Promise(resolve => setTimeout(resolve, 1000)); // Increased timeout for larger files
       
-      // If we didn't find coordinates, still add the file
-      if (!fileList.value.some(f => f.path === path)) {
-        console.log(`No coordinates found for ${filename}, adding without coordinates`);
-        addFileToList(filename, path, fileType, null, null);
+      // Log if coordinates were found
+      if (currentFile.value.content.toLowerCase().includes('latitude:') || 
+          currentFile.value.content.toLowerCase().includes('longitude:')) {
+        console.log(`File ${filename} contains coordinate keywords`);
+        console.log(`File content sample: ${currentFile.value.content.substring(0, 200)}...`);
+      } else {
+        console.log(`No coordinate keywords found in ${filename}`);
+        if (!fileList.value.some(f => f.path === path)) {
+          console.log(`No coordinates found for ${filename}, adding without coordinates`);
+          addFileToList(filename, path, fileType, null, null);
+        }
       }
     } catch (error) {
       console.error(`Error reading file ${path}:`, error);
@@ -290,22 +343,34 @@ export const useFlipperStore = defineStore('flipper', () => {
     
     currentFile.value.content += line + '\n';
     
-    // Check for coordinate patterns in this specific line
-    let latitudeMatch = line.match(/Latitude:\s*(-?\d+\.\d+)/);
-    let longitudeMatch = line.match(/Longitude:\s*(-?\d+\.\d+)/);
+    // Check for Latitude and Longitude patterns in this specific line (case insensitive)
+    // Match both decimal and integer formats
+    let latitudeMatch = line.match(/Latitude:\s*(-?\d+\.?\d*)/i);
+    let longitudeMatch = line.match(/Longitude:\s*(-?\d+\.?\d*)/i);
     
     // If not found in this line, check the entire accumulated content
     if (!latitudeMatch || !longitudeMatch) {
       const content = currentFile.value.content;
-      latitudeMatch = latitudeMatch || content.match(/Latitude:\s*(-?\d+\.\d+)/);
-      longitudeMatch = longitudeMatch || content.match(/Longitude:\s*(-?\d+\.\d+)/);
+      latitudeMatch = latitudeMatch || content.match(/Latitude:\s*(-?\d+\.?\d*)/i);
+      longitudeMatch = longitudeMatch || content.match(/Longitude:\s*(-?\d+\.?\d*)/i);
     }
     
     if (latitudeMatch && longitudeMatch) {
       const latitude = parseFloat(latitudeMatch[1]);
       const longitude = parseFloat(longitudeMatch[1]);
       
-      console.log(`Extracted coordinates for ${currentFile.value.path}: ${latitude}, ${longitude}`);
+      // Add additional validation to ensure coordinates are valid numbers
+      if (!isNaN(latitude) && !isNaN(longitude) && 
+          latitude >= -90 && latitude <= 90 && 
+          longitude >= -180 && longitude <= 180) {
+        console.log(`Extracted valid coordinates for ${currentFile.value.path}: ${latitude}, ${longitude}`);
+      } else {
+        console.warn(`Invalid coordinates extracted for ${currentFile.value.path}: ${latitude}, ${longitude}`);
+        // Continue processing in case we find valid coordinates later
+        return;
+      }
+      
+      console.log(`Adding file with coordinates for ${currentFile.value.path}: ${latitude}, ${longitude}`);
       
       // Add file to list with coordinates
       addFileToList(
@@ -361,40 +426,45 @@ export const useFlipperStore = defineStore('flipper', () => {
   // Directories to ignore when listing files
   const ignoredDirectories = [
     '/ext/subghz/assets',
-    '/ext/nfc/assets',
     '/ext/subghz/samples',
-    '/ext/subghz/blocked',
-    '/ext/subghz/dangerous',
+    '/ext/subghz/.cache',
+    '/ext/nfc/assets',
     '/ext/nfc/samples',
-    '/ext/lfrfid/samples'
+    '/ext/nfc/.cache',
+    '/ext/lfrfid/assets',
+    '/ext/lfrfid/samples',
+    '/ext/lfrfid/.cache',
   ];
   
   // Add directory to queue for listing
   const addDirectoryToQueue = (dirPath) => {
+    // Normalize the path - ensure no double slashes
+    const normalizedPath = dirPath.replace(/\/\/+/g, '/');
+    
     // Skip if already in queue or if it's not in one of the allowed base directories
     const allowedBaseDirs = ['/ext/subghz', '/ext/lfrfid', '/ext/nfc'];
-    const isInAllowedDir = allowedBaseDirs.some(dir => dirPath.startsWith(dir));
+    const isInAllowedDir = allowedBaseDirs.some(dir => normalizedPath.startsWith(dir));
     
     if (!isInAllowedDir) {
-      console.log(`Skipping directory outside allowed paths: ${dirPath}`);
+      console.log(`Skipping directory outside allowed paths: ${normalizedPath}`);
       return;
     }
     
     // Skip if directory is in the ignored list
-    if (ignoredDirectories.some(dir => dirPath.startsWith(dir))) {
-      console.log(`Skipping ignored directory: ${dirPath}`);
+    if (ignoredDirectories.some(dir => normalizedPath.startsWith(dir))) {
+      console.log(`Skipping ignored directory: ${normalizedPath}`);
       return;
     }
     
     // Check if already in queue
-    if (directoryQueue.value.includes(dirPath)) {
-      console.log(`Directory already in queue: ${dirPath}`);
+    if (directoryQueue.value.includes(normalizedPath)) {
+      console.log(`Directory already in queue: ${normalizedPath}`);
       return;
     }
     
     // Add to queue
-    directoryQueue.value.push(dirPath);
-    console.log(`Added directory to queue: ${dirPath} (${directoryQueue.value.length} in queue)`);
+    directoryQueue.value.push(normalizedPath);
+    console.log(`Added directory to queue: ${normalizedPath} (${directoryQueue.value.length} in queue)`);
     
     // Start processing directory queue if not already processing
     if (!isProcessingDirectories.value && isConnected.value) {
@@ -404,9 +474,30 @@ export const useFlipperStore = defineStore('flipper', () => {
   
   // Add file to read queue
   const addToReadQueue = (path, filename, fileType) => {
+    // Normalize the path - ensure no double slashes
+    const normalizedPath = path.replace(/\/\/+/g, '/');
+    
+    // Ensure we're using the correct file type based on extension and path
+    let detectedFileType = fileType || 'unknown';
+    if (normalizedPath.includes('/ext/subghz') || filename.endsWith('.sub')) {
+      detectedFileType = 'subghz';
+    } else if (normalizedPath.includes('/ext/lfrfid') || filename.endsWith('.rfid')) {
+      detectedFileType = 'rfid';
+    } else if (normalizedPath.includes('/ext/nfc') || filename.endsWith('.nfc')) {
+      detectedFileType = 'nfc';
+    } else if (filename.endsWith('.ir')) {
+      detectedFileType = 'ir';
+    }
+    
+    // Skip files that don't have a recognized type
+    if (detectedFileType === 'unknown') {
+      console.log(`Skipping file with unknown type: ${filename}`);
+      return;
+    }
+    
     // Add to queue
-    fileReadQueue.value.push({ path, filename, fileType });
-    console.log(`Added to read queue: ${filename} (${fileReadQueue.value.length} in queue)`);
+    fileReadQueue.value.push({ path: normalizedPath, filename, fileType: detectedFileType });
+    console.log(`Added to read queue: ${filename} (path: ${normalizedPath}, type: ${detectedFileType})`);
     
     // Start processing queue if not already processing
     if (!isProcessingQueue.value) {
@@ -464,6 +555,7 @@ export const useFlipperStore = defineStore('flipper', () => {
         
         // Send command to list files
         const quotedPath = dirPath.includes(' ') ? `"${dirPath}"` : dirPath;
+        console.log(`Listing directory contents: ${quotedPath}`);
         await writer.value.write(`storage list ${quotedPath}\r\n`);
         
         // Wait to ensure all files are listed
@@ -489,42 +581,30 @@ export const useFlipperStore = defineStore('flipper', () => {
       fileReadQueue.value = [];
       directoryQueue.value = [];
       
-      // Process directories sequentially with proper waiting
-      const directories = [
+      // Define allowed root directories
+      const allowedDirectories = [
         '/ext/subghz',
         '/ext/lfrfid',
         '/ext/nfc'
       ];
       
-      // Process each directory
-      for (const dir of directories) {
-        console.log(`Listing files from '${dir}'`);
-        currentDirectory.value = dir;
-        
-        // Send command to list files
-        await writer.value.write(`storage list ${dir}\r\n`);
-        
-        // Wait longer to ensure all files are listed
-        await new Promise(resolve => setTimeout(resolve, 2000));
-        
-        // Get the files we've found so far
-        const filesFound = fileList.value.filter(file => file.path.includes(dir));
-        console.log(`Found ${filesFound.length} files in ${dir}`);
+      // Start with root directories we're interested in
+      console.log("Starting file listing with root directories:");
+      for (const dir of allowedDirectories) {
+        console.log(`Adding root directory to queue: ${dir}`);
+        addDirectoryToQueue(dir);
       }
+      
+      // Process the directory queue first
+      await processDirectoryQueue();
       
       console.log(`Total files found: ${fileList.value.length}`);
       console.log(`Files in read queue: ${fileReadQueue.value.length}`);
-      console.log(`Directories in queue: ${directoryQueue.value.length}`);
-      
-      // Process the directory queue first if not empty
-      if (directoryQueue.value.length > 0) {
-        await processDirectoryQueue();
-      }
       
       // Process the file read queue
       if (fileReadQueue.value.length > 0) {
         processFileQueue();
-      } else if (directoryQueue.value.length === 0) {
+      } else {
         // No files to read and no directories to process, set syncing to false
         isSyncing.value = false;
       }
