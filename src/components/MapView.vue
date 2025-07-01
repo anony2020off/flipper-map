@@ -362,10 +362,10 @@ const getMarkerIcon = (fileType, isSelected = false) => {
   }
   
   // Create small circles by default, larger with icons when selected (hover)
-  // Normal size reduced by half, hovered size increased by 50% from reduced size
-  const size = isSelected ? 33 : 12; // Hovered size increased by 50% (22 * 1.5 = 33)
-  const iconSize = isSelected ? 14 : 0; // Hovered icon size increased by ~50% (9 * 1.5 ≈ 14)
-  const strokeWidth = isSelected ? 2 : 0.75; // Increased stroke width for hovered state
+  // Normal size set to 18px, hovered size at 33px
+  const size = isSelected ? 33 : 18; // Normal size increased to 18px as requested
+  const iconSize = isSelected ? 14 : 0; // No icon when not selected
+  const strokeWidth = isSelected ? 2 : 1; // Adjusted stroke width for normal state
   
   // Font Awesome icon paths for consistent icons
   const iconPaths = {
