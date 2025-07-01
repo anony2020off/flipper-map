@@ -52,7 +52,7 @@
           @click="toggleFilter('subghz')" 
           :class="['btn btn-sm d-flex align-items-center gap-1', 
                   activeFilters.includes('subghz') ? 'custom-primary-btn' : 'btn-outline-secondary']">
-          <i class="fas fa-broadcast-tower"></i>
+          <i class="fas fa-signal"></i>
           <span>RF</span>
           <span class="ms-1 badge bg-secondary rounded-pill">
             {{ getFilterCount('subghz') }}
