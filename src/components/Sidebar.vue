@@ -52,10 +52,10 @@
           @click="toggleFilter('subghz')" 
           :class="['btn btn-sm d-flex align-items-center gap-1', 
                   activeFilters.includes('subghz') ? 'custom-primary-btn' : 'btn-outline-secondary']">
-          <i class="fas fa-signal"></i>
-          <span>RF</span>
+          <i class="fas fa-signal small"></i>
+          <span class="small">SubGHz</span>
           <span class="ms-1 badge bg-secondary rounded-pill">
-            {{ getFilterCount('subghz') }}
+            <small>{{ getFilterCount('subghz') }}</small>
           </span>
         </button>
         
@@ -63,10 +63,10 @@
           @click="toggleFilter('rfid')" 
           :class="['btn btn-sm d-flex align-items-center gap-1', 
                   activeFilters.includes('rfid') ? 'custom-primary-btn' : 'btn-outline-secondary']">
-          <i class="fas fa-id-card"></i>
-          <span>RFID</span>
+          <i class="fas fa-id-card small"></i>
+          <span class="small">RFID</span>
           <span class="ms-1 badge bg-secondary rounded-pill">
-            {{ getFilterCount('rfid') }}
+            <small>{{ getFilterCount('rfid') }}</small>
           </span>
         </button>
         
@@ -74,10 +74,10 @@
           @click="toggleFilter('nfc')" 
           :class="['btn btn-sm d-flex align-items-center gap-1', 
                   activeFilters.includes('nfc') ? 'custom-primary-btn' : 'btn-outline-secondary']">
-          <i class="fas fa-wifi"></i>
-          <span>NFC</span>
+          <i class="fas fa-wifi small"></i>
+          <span class="small">NFC</span>
           <span class="ms-1 badge bg-secondary rounded-pill">
-            {{ getFilterCount('nfc') }}
+            <small>{{ getFilterCount('nfc') }}</small>
           </span>
         </button>
       </div>
