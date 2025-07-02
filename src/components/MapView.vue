@@ -47,16 +47,55 @@ const mapFeaturesHidden = ref(false);
 
 // Initialize Leaflet map
 const initMap = () => {
-  // Check if Leaflet is available
   if (!checkLeaflet()) return;
   
-  // Create map instance
+  // Create map instance with default world view
   map.value = L.map('map', {
-    center: [0, 0], // Default center
-    zoom: 2, // Default zoom level
+    center: [20, 0], // Default to center of world map
+    zoom: 2, // Zoomed out to show most of the world
     zoomControl: true,
     attributionControl: true
   });
+  
+  // Try to get client's location and zoom to it
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+        
+        // Update location store
+        locationStore.userLocation = {
+          latitude: latitude,
+          longitude: longitude
+        };
+        
+        // Fly to user location with animation
+        map.value.flyTo([latitude, longitude], 13, {
+          animate: true,
+          duration: 1.5
+        });
+        
+        // Add a pulsing location marker for the user
+        addUserLocationMarker(latitude, longitude);
+      },
+      (error) => {
+        console.warn('Geolocation error:', error.message);
+        // Fallback to stored location or add pins if available
+        if (locationStore.latitude && locationStore.longitude) {
+          map.value.setView([locationStore.latitude, locationStore.longitude], 13);
+        } else if (props.pins.length > 0) {
+          // Center on first pin if no user location
+          const firstPin = props.pins[0];
+          map.value.setView([firstPin.latitude, firstPin.longitude], 13);
+        }
+      },
+      { 
+        enableHighAccuracy: true,
+        timeout: 5000,
+        maximumAge: 0
+      }
+    );
+  }
 
   // Create tile layers
   mapLayers.value = {
@@ -73,25 +112,48 @@ const initMap = () => {
   // Add standard layer by default
   mapLayers.value.standard.addTo(map.value);
 
-  // Add user location marker if available
-  if (locationStore.userLocation) {
-    const { latitude, longitude } = locationStore.userLocation;
+  // Function to add user location marker with pulsing effect
+  const addUserLocationMarker = (latitude, longitude) => {
+    if (!map.value) return;
     
-    // Create user location marker
-    userLocationMarker.value = L.circleMarker([latitude, longitude], {
-      radius: 8,
-      fillColor: '#3388ff',
-      color: '#ffffff',
-      weight: 2,
-      opacity: 1,
-      fillOpacity: 0.8
-    }).addTo(map.value);
+    // Remove existing marker if any
+    if (userLocationMarker.value) {
+      map.value.removeLayer(userLocationMarker.value);
+    }
+    
+    // Create pulsing circle marker for user location
+    userLocationMarker.value = L.circleMarker(
+      [latitude, longitude],
+      {
+        radius: 8,
+        fillColor: '#4285F4',
+        color: '#ffffff',
+        weight: 2,
+        opacity: 1,
+        fillOpacity: 0.7,
+        className: 'user-location-marker' // For CSS animation
+      }
+    ).addTo(map.value);
     
     // Add tooltip to user location marker
     userLocationMarker.value.bindTooltip('Your Location', {
       permanent: false,
       direction: 'top'
     });
+    
+    // Store the location in the store
+    locationStore.userLocation = {
+      latitude: latitude,
+      longitude: longitude
+    };
+  };
+
+  // Add user location marker if available
+  if (locationStore.userLocation) {
+    const { latitude, longitude } = locationStore.userLocation;
+    
+    // Create user location marker
+    addUserLocationMarker(latitude, longitude);
     
     // Center map on user location
     map.value.setView([latitude, longitude], 13);
@@ -625,5 +687,29 @@ const openPopup = (marker, pin) => {
 :deep(.custom-map-marker) {
   background: transparent;
   border: none;
+}
+
+/* Pulsing animation for user location marker */
+@keyframes pulse {
+  0% {
+    transform: scale(0.8);
+    opacity: 0.7;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 0.9;
+  }
+  100% {
+    transform: scale(0.8);
+    opacity: 0.7;
+  }
+}
+
+:deep(.user-location-marker) {
+  animation: pulse 2s infinite ease-in-out;
+}
+
+:deep(.user-location-marker circle) {
+  transform-origin: center;
 }
 </style>
