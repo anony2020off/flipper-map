@@ -54,7 +54,8 @@ const initMap = () => {
     center: [20, 0], // Default to center of world map
     zoom: 2, // Zoomed out to show most of the world
     zoomControl: true,
-    attributionControl: true
+    attributionControl: true,
+    closePopupOnClick: true
   });
   
   // Try to get client's location and zoom to it
@@ -433,78 +434,131 @@ watch(() => props.selectedPin, (newPin) => {
   }
 });
 
+// Track if markers are currently being added
+const isAddingMarkers = ref(false);
+
 // Add markers for all pins
 const addMarkers = () => {
-  // Clear existing markers
+  // If we're already adding markers, don't start another batch
+  if (isAddingMarkers.value) {
+    return;
+  }
+  
+  // Set flag to indicate we're adding markers
+  isAddingMarkers.value = true;
+  
+  // Store currently selected pin path before clearing markers
+  const selectedPinPath = props.selectedPin?.path;
+  
+  // Close all popups first to prevent flashing
+  if (map.value) {
+    map.value.closePopup();
+  }
+  
+  // Clear existing markers first
   clearMarkers();
   
-  if (!map.value || !checkLeaflet()) return;
+  if (!map.value || !checkLeaflet()) {
+    isAddingMarkers.value = false;
+    return;
+  }
+  
+  // Disable map animations temporarily to prevent positioning issues
+  const wasAnimated = map.value.options.animate;
+  map.value.options.animate = false;
   
   // Add new markers only for pins with valid coordinates
-  markers.value = props.pins
-    .filter(pin => {
-      // Check if pin has valid coordinates
-      return pin.latitude !== undefined && 
-             pin.longitude !== undefined && 
-             pin.latitude !== null && 
-             pin.longitude !== null &&
-             !isNaN(pin.latitude) && 
-             !isNaN(pin.longitude);
-    })
-    .map(pin => {
-      const position = [Number(pin.latitude), Number(pin.longitude)]; // Leaflet uses [lat, lng] format
-      const isSelected = props.selectedPin && props.selectedPin.path === pin.path;
+  const validPins = props.pins.filter(pin => {
+    // Check if pin has valid coordinates
+    return pin.latitude !== undefined && 
+           pin.longitude !== undefined && 
+           pin.latitude !== null && 
+           pin.longitude !== null &&
+           !isNaN(pin.latitude) && 
+           !isNaN(pin.longitude);
+  });
+  
+  // Create temporary array to hold all markers
+  const newMarkers = [];
+  
+  // Process all pins at once
+  validPins.forEach(pin => {
+    const position = [Number(pin.latitude), Number(pin.longitude)]; // Leaflet uses [lat, lng] format
+    const isSelected = props.selectedPin && props.selectedPin.path === pin.path;
+    
+    // Create marker with custom icon based on file type
+    const marker = L.marker(position, {
+      title: pin.name,
+      icon: createMarkerIcon(pin.type, isSelected),
+      zIndexOffset: isSelected ? 1000 : 0, // Bring selected marker to front
+      riseOnHover: true, // Rise marker on hover
+      bubblingMouseEvents: false, // Prevent event bubbling to improve hover behavior
+      // Critical for proper marker movement during zoom
+      keyboard: false,
+      // Disable marker animations to prevent positioning issues
+      interactive: true
+    });
+    
+    // Add marker to map - this is where the marker is actually rendered
+    marker.addTo(map.value);
+    
+    // Update marker icon on zoom to ensure proper sizing
+    const updateMarkerOnZoom = () => {
+      if (!marker || !marker._icon) return; // Skip if marker was removed
       
-      // Create marker with custom icon based on file type
-      const marker = L.marker(position, {
-        title: pin.name,
-        icon: createMarkerIcon(pin.type, isSelected),
-        zIndexOffset: isSelected ? 1000 : 0, // Bring selected marker to front
-        riseOnHover: true // Rise marker on hover
-      }).addTo(map.value);
+      // Get current state
+      const isSelected = marker.isSelected;
+      const isHovered = marker.isHovered;
+      const hasOpenPopup = marker.hasOpenPopup;
       
-      // Update marker icon on zoom to ensure proper sizing
-      const updateMarkerOnZoom = () => {
-        // Get current state
-        const isSelected = marker.isSelected;
-        const isHovered = marker.isHovered;
-        const hasOpenPopup = marker.hasOpenPopup;
-        
-        // Determine which icon state to use
-        let useSelected = isSelected || hasOpenPopup;
-        let useHovered = !useSelected && isHovered;
-        
-        // Update icon with smooth transition
-        marker.setIcon(createMarkerIcon(pin.type, useSelected, useHovered));
-      };
+      // Determine which icon state to use
+      let useSelected = isSelected || hasOpenPopup;
+      let useHovered = !useSelected && isHovered;
       
-      // Store additional properties on the marker
-      marker.pinPath = pin.path;
-      marker.pinType = pin.type;
-      marker.isSelected = isSelected;
-      marker.isHovered = false;
-      marker.hasOpenPopup = false;
-      marker.updateMarkerOnZoom = updateMarkerOnZoom;
+      // Update icon with smooth transition
+      marker.setIcon(createMarkerIcon(pin.type, useSelected, useHovered));
+    };
+    
+    // Store additional properties on the marker
+    marker.pinPath = pin.path;
+    marker.pinType = pin.type;
+    marker.isSelected = isSelected;
+    marker.isHovered = false;
+    marker.hasOpenPopup = false;
+    marker.updateMarkerOnZoom = updateMarkerOnZoom;
       
-      // Create popup with custom content
+      // Create popup content once (not repeatedly)
+      const popupContent = createPopupContent(pin);
+      
+      // Create popup with custom content but don't add it to the DOM yet
       const popup = L.popup({
         maxWidth: 300,
         className: 'custom-popup',
         closeButton: true,
-        autoClose: true,
+        autoClose: false, // Prevent auto-closing to avoid flashing
         closeOnEscapeKey: true,
-        closeOnClick: false,
-        offset: L.point(0, -10), // Offset popup to align better with marker
-        autoPanPadding: L.point(50, 50) // Better padding when auto-panning
-      }).setContent(createPopupContent(pin));
+        closeOnClick: false, // Prevent closing when clicking on map
+        offset: L.point(0, -25), // Increased offset for better alignment with marker
+        autoPanPadding: L.point(50, 50), // Better padding when auto-panning
+        autoPan: true, // Ensure popup is visible when opened
+        keepInView: true // Keep popup in view when panning
+      }).setContent(popupContent);
       
       // Track popup open/close events
       popup.on('add', () => {
+        // Mark this popup as open
         marker.hasOpenPopup = true;
+        
+        // Update marker appearance
+        marker.isSelected = true;
         updateMarkerOnZoom();
+        
+        // Customize popup after it's added to the DOM
+        setTimeout(() => customizePopup(popup, pin), 10);
       });
       
       popup.on('remove', () => {
+        // Mark popup as closed
         marker.hasOpenPopup = false;
         
         // Only reset selected state if this pin is not the currently selected one in the store
@@ -515,40 +569,101 @@ const addMarkers = () => {
         updateMarkerOnZoom();
       });
       
-      // Add popup to marker
-      marker.bindPopup(popup);
+      // Add popup to marker with explicit options
+      marker.bindPopup(popup, {
+        interactive: true,  // Make sure popup is interactive
+        bubblingMouseEvents: false  // Prevent events from bubbling to map
+      });
       
       // Add click handler to open popup
-      marker.on('click', () => {
+      marker.on('click', (e) => {
+        // Prevent the event from propagating to the map
+        L.DomEvent.stopPropagation(e);
+        L.DomEvent.preventDefault(e);
+        
+        // Close any other open popups first
+        markers.value.forEach(m => {
+          if (m !== marker && m.hasOpenPopup) {
+            m.closePopup();
+            m.hasOpenPopup = false;
+          }
+        });
+        
         // Update selected state
         marker.isSelected = true;
         marker.setIcon(createMarkerIcon(pin.type, true, false));
         marker.setZIndexOffset(1000);
-        marker.openPopup();
-      });
-      
-      // Add hover effect using mouseover and mouseout events
-      marker.on('mouseover', () => {
-        if (!marker.isSelected && !marker.hasOpenPopup) {
-          marker.isHovered = true;
-          marker.setIcon(createMarkerIcon(pin.type, false, true));
-          marker.setZIndexOffset(500); // Bring hovered marker above normal markers but below selected
-        }
-      });
-      
-      marker.on('mouseout', () => {
-        // Always reset hover state on mouseout
-        marker.isHovered = false;
         
-        // Only change the icon if not selected and no open popup
-        if (!marker.isSelected && !marker.hasOpenPopup) {
-          marker.setIcon(createMarkerIcon(pin.type, false, false));
-          marker.setZIndexOffset(0); // Restore normal z-index
-        } else if (marker.isSelected || marker.hasOpenPopup) {
-          // Keep selected state icon
-          marker.setIcon(createMarkerIcon(pin.type, true, false));
+        // Update selected pin in parent component
+        emit('update:selectedPin', pin);
+        
+        // First pan to marker position
+        if (map.value) {
+          map.value.panTo(marker.getLatLng());
         }
+        
+        // Force open the popup after panning completes
+        setTimeout(() => {
+          if (map.value && marker) {
+            marker.openPopup();
+          }
+        }, 250); // Longer delay to ensure map has finished panning
       });
+      
+      // Ensure the marker is clickable
+      if (marker.getElement()) {
+        marker.getElement().style.pointerEvents = 'auto';
+        marker.getElement().style.cursor = 'pointer';
+      }
+      
+      // Add this marker to our array
+      newMarkers.push(marker);
+      
+      // Use Leaflet's built-in events for better hover handling
+      const markerElement = marker.getElement();
+      if (markerElement) {
+        // Use DOM events for more reliable hover detection
+        markerElement.addEventListener('mouseenter', () => {
+          if (!marker.isSelected && !marker.hasOpenPopup) {
+            marker.isHovered = true;
+            marker.setIcon(createMarkerIcon(pin.type, false, true));
+            marker.setZIndexOffset(500); // Bring hovered marker above normal markers but below selected
+          }
+        });
+        
+        markerElement.addEventListener('mouseleave', () => {
+          // Always reset hover state on mouseout
+          marker.isHovered = false;
+          
+          // Only change the icon if not selected and no open popup
+          if (!marker.isSelected && !marker.hasOpenPopup) {
+            marker.setIcon(createMarkerIcon(pin.type, false, false));
+            marker.setZIndexOffset(0); // Restore normal z-index
+          } else if (marker.isSelected || marker.hasOpenPopup) {
+            // Keep selected state icon
+            marker.setIcon(createMarkerIcon(pin.type, true, false));
+          }
+        });
+      } else {
+        // Fallback to Leaflet events if DOM element isn't available yet
+        marker.on('mouseover', () => {
+          if (!marker.isSelected && !marker.hasOpenPopup) {
+            marker.isHovered = true;
+            marker.setIcon(createMarkerIcon(pin.type, false, true));
+            marker.setZIndexOffset(500);
+          }
+        });
+        
+        marker.on('mouseout', () => {
+          marker.isHovered = false;
+          if (!marker.isSelected && !marker.hasOpenPopup) {
+            marker.setIcon(createMarkerIcon(pin.type, false, false));
+            marker.setZIndexOffset(0);
+          } else if (marker.isSelected || marker.hasOpenPopup) {
+            marker.setIcon(createMarkerIcon(pin.type, true, false));
+          }
+        });
+      }
       
       // Handle popup open event
       marker.on('popupopen', () => {
@@ -611,6 +726,35 @@ const addMarkers = () => {
       
       return marker;
     });
+    
+    // Update the markers array with the new markers
+    markers.value = newMarkers;
+    
+    // If there was a selected pin before, try to find and select it again
+    if (selectedPinPath) {
+      const selectedMarker = markers.value.find(m => m.pinPath === selectedPinPath);
+      if (selectedMarker) {
+        // Update selected state
+        selectedMarker.isSelected = true;
+        selectedMarker.setIcon(createMarkerIcon(selectedMarker.pinType, true, false));
+        selectedMarker.setZIndexOffset(1000);
+        
+        // Delay opening the popup to ensure proper positioning
+        setTimeout(() => {
+          if (map.value && selectedMarker) {
+            selectedMarker.openPopup();
+          }
+        }, 300);
+      }
+    }
+    
+    // Restore map animation setting
+    if (map.value) {
+      map.value.options.animate = wasAnimated;
+    }
+    
+    // Reset the loading flag
+    isAddingMarkers.value = false;
 };
 
 // Open popup for a marker
