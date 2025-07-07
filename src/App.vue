@@ -1,7 +1,7 @@
 <script setup>
 import { ref } from 'vue';
 import Sidebar from './components/Sidebar.vue';
-import LeafletMap from './components/LeafletMap.vue';
+import Map from './components/Map.vue';
 </script>
 
 <template>
@@ -11,7 +11,7 @@ import LeafletMap from './components/LeafletMap.vue';
         <Sidebar />
       </div>
       <div class="col-md-9 map-col">
-        <LeafletMap />
+        <Map />
       </div>
     </div>
   </div>
