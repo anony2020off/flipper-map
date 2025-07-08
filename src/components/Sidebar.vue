@@ -5,12 +5,25 @@
     </div>
     <div class="sidebar-content">
       <p>This is the sidebar content</p>
+      <a href="#" @click="handleFlipperConnection">
+        {{ flipper.isConnected ? 'Disconnect' : 'Connect' }}
+      </a>
     </div>
   </div>
 </template>
 
 <script setup>
+  import {useFlipperStore} from "@/stores/flipper.js";
 
+  const flipper = useFlipperStore();
+
+  const handleFlipperConnection = async () => {
+    if (flipper.isConnected) {
+      await flipper.disconnect();
+    } else {
+      await flipper.connect();
+    }
+  }
 </script>
 
 <style scoped>

@@ -4,12 +4,18 @@
 
 <script setup>
 import { onMounted, onUnmounted, ref } from 'vue';
+import { useLocationStore } from "@/stores/location.js";
+import { useFlipperStore } from "@/stores/flipper.js";
 
 const mapInstance = ref(null);
 const userMarker = ref(null);
 const defaultZoom = 15;
 
+const location = useLocationStore()
+const flipper = useFlipperStore()
+
 onMounted(() => {
+
   mapInstance.value = L.map('map', {
     center: window.localStorage.getItem('center')?.split(',') ?? [25, 0],
     zoom: window.localStorage.getItem('zoom') ?? 2,
@@ -32,32 +38,35 @@ onMounted(() => {
   L.control.zoom({position: 'topright'}).addTo(mapInstance.value)
 
   // Move to current location
-  L.easyButton({
-    position: 'topright',
-    states: [
-      {
-        stateName: 'geolocation-button',
-        title: 'Center map to current location',
-        icon: 'fa-location-crosshairs fa-lg',
-        onClick: () => {
-          if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(
+  if (location.geolocationSupported()) {
+    L.easyButton({
+      position: 'topright',
+      states: [
+        {
+          stateName: 'geolocation-button',
+          title: 'Center map to current location',
+          icon: 'fa-location-crosshairs fa-lg',
+          onClick: () => {
+            if (navigator.geolocation) {
+              navigator.geolocation.getCurrentPosition(
                 (position) => {
-                  const { latitude, longitude } = position.coords;
+                  const {latitude, longitude} = position.coords;
                   mapInstance.value.setView([latitude, longitude], defaultZoom);
                 },
-                (error) => {},
+                (error) => {
+                },
                 {
                   enableHighAccuracy: true,
                   timeout: 5000,
                   maximumAge: 0
                 }
-            );
-          }
+              );
+            }
+          },
         },
-      },
-    ],
-  }).addTo(mapInstance.value)
+      ],
+    }).addTo(mapInstance.value)
+  }
 
   let centerWasSet = false;
 
@@ -65,43 +74,30 @@ onMounted(() => {
   if (window.localStorage.getItem('center')) {
     centerWasSet = true;
     mapInstance.value.setView(
-        window.localStorage.getItem('center')?.split(',') ?? [25, 0],
-        window.localStorage.getItem('zoom') ?? defaultZoom
+      window.localStorage.getItem('center')?.split(',') ?? [25, 0],
+      window.localStorage.getItem('zoom') ?? defaultZoom
     );
   }
 
   // Set user location marker
-  if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        const { latitude, longitude } = position.coords;
+  if (location.geolocationSupported()) {
 
-        if (!centerWasSet) {
-          mapInstance.value.setView([latitude, longitude], defaultZoom);
-        }
+    const { latitude, longitude } = location.userLocation;
 
-        const pulsingIcon = L.divIcon({
-          className: 'user-location-marker',
-          html: '<div class="pulse"></div>',
-          iconSize: [20, 20],
-          iconAnchor: [10, 10]
-        });
-        
-        userMarker.value = L.marker([latitude, longitude], { icon: pulsingIcon })
-          .addTo(mapInstance.value)
-          .bindTooltip('Your Location', {opacity: .9});
-      },
-      (error) => {
-        if (!centerWasSet) {
-          mapInstance.value.setView([0, 0], 2);
-        }
-      },
-      {
-        enableHighAccuracy: true,
-        timeout: 5000,
-        maximumAge: 0
-      }
-    );
+    if (!centerWasSet) {
+      mapInstance.value.setView([latitude, longitude], defaultZoom);
+    }
+
+    const pulsingIcon = L.divIcon({
+      className: 'user-location-marker',
+      html: '<div class="pulse"></div>',
+      iconSize: [20, 20],
+      iconAnchor: [10, 10]
+    });
+
+    userMarker.value = L.marker([latitude, longitude], { icon: pulsingIcon })
+      .addTo(mapInstance.value)
+      .bindTooltip('Your Location', {opacity: .9});
   }
 
   // Save center locally

@@ -1,7 +1,14 @@
 <script setup>
-import { ref } from 'vue';
+import {onMounted, ref} from 'vue';
 import Sidebar from './components/Sidebar.vue';
 import Map from './components/Map.vue';
+import {useLocationStore} from "@/stores/location.js";
+
+const location = useLocationStore();
+
+onMounted(async () => {
+  await location.getUserLocation();
+});
 </script>
 
 <template>
