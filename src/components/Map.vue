@@ -14,7 +14,7 @@ const defaultZoom = 15;
 const location = useLocationStore()
 const flipper = useFlipperStore()
 
-onMounted(() => {
+onMounted(async () => {
 
   mapInstance.value = L.map('map', {
     center: window.localStorage.getItem('center')?.split(',') ?? [25, 0],
@@ -35,12 +35,12 @@ onMounted(() => {
   }).addTo(mapInstance.value);
 
   // Zoom control
-  L.control.zoom({position: 'topright'}).addTo(mapInstance.value)
+  L.control.zoom({position: 'topleft'}).addTo(mapInstance.value)
 
   // Move to current location
   if (location.geolocationSupported()) {
     L.easyButton({
-      position: 'topright',
+      position: 'topleft',
       states: [
         {
           stateName: 'geolocation-button',
@@ -82,7 +82,11 @@ onMounted(() => {
   // Set user location marker
   if (location.geolocationSupported()) {
 
+    await location.getUserLocation();
+
     const { latitude, longitude } = location.userLocation;
+
+    console.log([latitude, longitude]);
 
     if (!centerWasSet) {
       mapInstance.value.setView([latitude, longitude], defaultZoom);

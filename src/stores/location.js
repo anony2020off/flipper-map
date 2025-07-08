@@ -1,34 +1,41 @@
-import {ref} from 'vue';
-import {defineStore} from 'pinia';
+import { ref } from 'vue';
+import { defineStore } from 'pinia';
 
 export const useLocationStore = defineStore('location', () => {
 
     const userLocation = ref(null);
+    const locationError = ref(null);
+    const isLoading = ref(false);
 
     const geolocationSupported = () => !!navigator.geolocation
 
     const getUserLocation = async () => {
         if (!navigator.geolocation) {
-            return;
+          locationError.value = 'Geolocation is not supported by your browser';
+          return;
         }
-
+    
+        isLoading.value = true;
         try {
-            const position = await new Promise((resolve, reject) => {
-                navigator.geolocation.getCurrentPosition(resolve, reject, {
-                    enableHighAccuracy: true,
-                    timeout: 5000,
-                    maximumAge: 0
-                });
+          const position = await new Promise((resolve, reject) => {
+            navigator.geolocation.getCurrentPosition(resolve, reject, {
+              enableHighAccuracy: true,
+              timeout: 5000,
+              maximumAge: 0
             });
-
-            userLocation.value = {
-                latitude: position.coords.latitude,
-                longitude: position.coords.longitude
-            };
+          });
+    
+          userLocation.value = {
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude
+          };
         } catch (error) {
-            console.error('Error getting location:', error);
+          locationError.value = `Error getting location: ${error.message}`;
+          console.error('Error getting location:', error);
+        } finally {
+          isLoading.value = false;
         }
-    };
+      };
 
     // Calculate distance between two points using Haversine formula
     const calculateDistance = (lat1, lon1, lat2, lon2) => {
@@ -50,6 +57,8 @@ export const useLocationStore = defineStore('location', () => {
 
     return {
         userLocation,
+        locationError,
+        isLoading,
         geolocationSupported,
         getUserLocation,
         calculateDistance
