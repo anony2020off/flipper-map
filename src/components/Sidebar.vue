@@ -5,13 +5,12 @@
     </div>
     <div class="sidebar-content">
       <p>This is the sidebar content</p>
-      <!-- Add your sidebar content here -->
     </div>
   </div>
 </template>
 
 <script setup>
-// Component logic goes here
+
 </script>
 
 <style scoped>
