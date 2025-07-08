@@ -20,7 +20,7 @@ onMounted(async () => {
     center: window.localStorage.getItem('center')?.split(',') ?? [25, 0],
     zoom: window.localStorage.getItem('zoom') ?? 2,
     attributionControl: false,
-    zoomControl: false,
+    zoomControl: true,
     worldCopyJump: true
   });
 
@@ -33,9 +33,6 @@ onMounted(async () => {
   const markers = L.markerClusterGroup({
     maxClusterRadius: zoom => zoom < 3 ? 40 : 30,
   }).addTo(mapInstance.value);
-
-  // Zoom control
-  L.control.zoom({position: 'topleft'}).addTo(mapInstance.value)
 
   // Move to current location
   if (location.geolocationSupported()) {
@@ -114,7 +111,6 @@ onMounted(async () => {
   mapInstance.value.on('zoomend', () => {
     window.localStorage.setItem('zoom', mapInstance.value.getZoom())
   })
-
 
 });
 

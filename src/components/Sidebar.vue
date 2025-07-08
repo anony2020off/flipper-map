@@ -13,17 +13,17 @@
 </template>
 
 <script setup>
-  import {useFlipperStore} from "@/stores/flipper.js";
+import {useFlipperStore} from "@/stores/flipper.js";
 
-  const flipper = useFlipperStore();
+const flipper = useFlipperStore();
 
-  const handleFlipperConnection = async () => {
-    if (flipper.isConnected) {
-      await flipper.disconnect();
-    } else {
-      await flipper.connect();
-    }
+const handleFlipperConnection = async () => {
+  if (flipper.isConnected) {
+    await flipper.disconnect();
+  } else {
+    await flipper.connect();
   }
+}
 </script>
 
 <style scoped>
