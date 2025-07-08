@@ -4,28 +4,82 @@
 
 <script setup>
 import { onMounted, onUnmounted, ref } from 'vue';
-import L from 'leaflet';
-import 'leaflet/dist/leaflet.css';
 
 const mapInstance = ref(null);
 const userMarker = ref(null);
-const defaultZoom = 13;
+const defaultZoom = 15;
 
 onMounted(() => {
-  mapInstance.value = L.map('map').setView([0, 0], 2);
+  mapInstance.value = L.map('map', {
+    center: window.localStorage.getItem('center')?.split(',') ?? [25, 0],
+    zoom: window.localStorage.getItem('zoom') ?? 2,
+    attributionControl: false,
+    zoomControl: false,
+    worldCopyJump: true
+  });
 
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
     maxZoom: 19
   }).addTo(mapInstance.value);
 
+  // Clusters
+  const markers = L.markerClusterGroup({
+    maxClusterRadius: zoom => zoom < 3 ? 40 : 30,
+  }).addTo(mapInstance.value);
+
+  // Zoom control
+  L.control.zoom({position: 'topright'}).addTo(mapInstance.value)
+
+  // Move to current location
+  L.easyButton({
+    position: 'topright',
+    states: [
+      {
+        stateName: 'geolocation-button',
+        title: 'Center map to current location',
+        icon: 'fa-location-crosshairs fa-lg',
+        onClick: () => {
+          if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                  const { latitude, longitude } = position.coords;
+                  mapInstance.value.setView([latitude, longitude], defaultZoom);
+                },
+                (error) => {},
+                {
+                  enableHighAccuracy: true,
+                  timeout: 5000,
+                  maximumAge: 0
+                }
+            );
+          }
+        },
+      },
+    ],
+  }).addTo(mapInstance.value)
+
+  let centerWasSet = false;
+
+  // Center map to last known coordinates and zoom level
+  if (window.localStorage.getItem('center')) {
+    centerWasSet = true;
+    mapInstance.value.setView(
+        window.localStorage.getItem('center')?.split(',') ?? [25, 0],
+        window.localStorage.getItem('zoom') ?? defaultZoom
+    );
+  }
+
+  // Set user location marker
   if (navigator.geolocation) {
     navigator.geolocation.getCurrentPosition(
       (position) => {
         const { latitude, longitude } = position.coords;
-        
-        mapInstance.value.setView([latitude, longitude], defaultZoom);
-        
+
+        if (!centerWasSet) {
+          mapInstance.value.setView([latitude, longitude], defaultZoom);
+        }
+
         const pulsingIcon = L.divIcon({
           className: 'user-location-marker',
           html: '<div class="pulse"></div>',
@@ -35,11 +89,12 @@ onMounted(() => {
         
         userMarker.value = L.marker([latitude, longitude], { icon: pulsingIcon })
           .addTo(mapInstance.value)
-          .bindPopup('Your location');
+          .bindTooltip('Your Location', {opacity: .9});
       },
       (error) => {
-        console.error('Error getting user location:', error);
-        mapInstance.value.setView([0, 0], 2);
+        if (!centerWasSet) {
+          mapInstance.value.setView([0, 0], 2);
+        }
       },
       {
         enableHighAccuracy: true,
@@ -47,9 +102,20 @@ onMounted(() => {
         maximumAge: 0
       }
     );
-  } else {
-    console.log('Geolocation is not supported by this browser.');
   }
+
+  // Save center locally
+  mapInstance.value.on('moveend', () => {
+    const center = mapInstance.value.getCenter()
+    window.localStorage.setItem('center', [center.lat, center.lng].join(','))
+  })
+
+  // Save zoom level locally
+  mapInstance.value.on('zoomend', () => {
+    window.localStorage.setItem('zoom', mapInstance.value.getZoom())
+  })
+
+
 });
 
 onUnmounted(() => {
