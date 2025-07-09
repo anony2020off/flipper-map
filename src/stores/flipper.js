@@ -65,8 +65,45 @@ export const useFlipperStore = defineStore('flipper', () => {
     } finally {
       isConnecting.value = false;
     }
-x
   };
+
+  const syncFiles = async () => {
+    if (!reader.value) return;
+    
+    try {
+      isSyncing.value = true;
+      
+      let buffer = '';
+      
+      while (true) {
+        const { value, done } = await reader.value.read();
+        if (done) {
+          // Reader has been canceled
+          break;
+        }
+        
+        // Append to buffer and process
+        buffer += value;
+        
+        // Process complete lines
+        const lines = buffer.split('\n');
+        buffer = lines.pop() || ''; // Keep the last incomplete line in the buffer
+        
+        // Process complete lines
+        for (const line of lines) {
+          processLine(line.trim());
+        }
+      }
+    } catch (error) {
+      console.error("Error syncing files:", error);
+    } finally {
+      isSyncing.value = false;
+    }
+  };
+
+  const processLine = (line) => {
+    
+  }
   
   const disconnect = async () => {
     if (!isConnected.value || !port.value) return;
