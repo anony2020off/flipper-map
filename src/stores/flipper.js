@@ -1,5 +1,6 @@
 import { ref } from 'vue';
 import { defineStore } from 'pinia';
+import { SHA256 } from 'crypto-js';
 
 export const useFlipperStore = defineStore('flipper', () => {
   const port = ref(null);
@@ -14,6 +15,7 @@ export const useFlipperStore = defineStore('flipper', () => {
   const isProcessingFiles = ref(false);
   const isProcessingDirectories = ref(false);
   const currentFile = ref({
+    hash: '',
     name: '',
     path: '',
     type: '',
@@ -107,6 +109,7 @@ export const useFlipperStore = defineStore('flipper', () => {
         const file = fileReadQueue.value.shift();
         console.log(`Processing ${file}`);
         currentFile.value = {
+          hash: SHA256(file).toString(),
           name: file.split('/').pop(),
           path: file,
           type: {sub: 'subghz', nfc: 'nfc', rfid: 'rfid'}[file.split('.').pop()],
