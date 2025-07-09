@@ -39,22 +39,21 @@ export const useFlipperStore = defineStore('flipper', () => {
       isConnecting.value = true;
       port.value = await navigator.serial.requestPort();
       await port.value.open({ baudRate: 230400 });
-      isConnected.value = true;
 
       // Create reader and writer
       const textDecoder = new TextDecoderStream();
-      const readableStreamClosed = port.value.readable.pipeTo(textDecoder.writable);
+      port.value.readable.pipeTo(textDecoder.writable);
       reader.value = textDecoder.readable.getReader();
       
       const textEncoder = new TextEncoderStream();
-      const writableStreamClosed = textEncoder.readable.pipeTo(port.value.writable);
+      textEncoder.readable.pipeTo(port.value.writable);
       writer.value = textEncoder.writable.getWriter();
       
       // Send initial command to ensure we're in CLI mode
       await writer.value.write("\r\n");
       
       // Wait a bit for the device to respond
-      await new Promise(resolve => setTimeout(resolve, 500));
+      await new Promise(resolve => setTimeout(resolve, 1500));
       
       // Set connected state
       isConnected.value = true;
@@ -85,7 +84,7 @@ export const useFlipperStore = defineStore('flipper', () => {
   };
 
   const syncFiles = async () => {
-    if (!reader.value) return;
+    if (!writer.value || !isConnected.value) return;
     
     try {
       isSyncing.value = true;
@@ -98,7 +97,7 @@ export const useFlipperStore = defineStore('flipper', () => {
       for (const directory of directories) {
         console.log(`Processing ${directory}`);
         await writer.value.write(`storage tree "${directory.replace(/\/\/+/g, '/')}"\r\n`);
-        await new Promise(resolve => setTimeout(resolve, 2000));
+        await new Promise(resolve => setTimeout(resolve, 500));
       }
 
       isProcessingDirectories.value = false;
@@ -117,7 +116,7 @@ export const useFlipperStore = defineStore('flipper', () => {
           key: '',
         };
         await writer.value.write(`storage read "${file.replace(/\/\/+/g, '/')}"\r\n`);
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        await new Promise(resolve => setTimeout(resolve, 500));
 
         fileList.value.push(currentFile.value);
       }
@@ -132,22 +131,19 @@ export const useFlipperStore = defineStore('flipper', () => {
   };
 
   const processLine = (line) => {
-    if (isSyncing.value && isProcessingDirectories.value && !isProcessingFiles.value) {
-      const matches = line.match(/\s+\[F\]\s+(\/ext\/(subghz|nfc|lfrfid)\/[A-Za-z\d\s_\-\./\(\)]+\.(sub|nfc|rfid))\s\d+b/)
+    console.log("Flipper output:", line);
+
+    if (isSyncing.value && isProcessingDirectories.value) {
+      const matches = line.match(/\[\F\]\s+(\/ext\/(subghz|nfc|lfrfid)\/[A-Za-z0-9_\-\s\./\(\)]+\.(sub|nfc|rfid))\s\d+b/m)
 
       if (matches && matches[1]) {
-        console.log(matches[1])
         const filePath = matches[1];
-        if (filePath && !filePath.contains('/.') && !filePath.contains('/assets/')) {
+        if (filePath && !filePath.includes('/.') && !filePath.includes('/assets/')) {
           console.log(`Found file: ${filePath}`);
           fileReadQueue.value.push(filePath);
         }
-      } else {
-        console.log('Skipping line: ' + line)
       }
-    }
-
-    if (isSyncing.value && !isProcessingDirectories.value && isProcessingFiles.value) {
+    } else if (isSyncing.value && isProcessingFiles.value) {
       currentFile.value.content += line + '\n';
 
       if (line.toLowerCase().startsWith('latitude:')) {
@@ -165,7 +161,10 @@ export const useFlipperStore = defineStore('flipper', () => {
       if (line.toLowerCase().startsWith('raw:')) {
         currentFile.value.key = 'RAW';
       }
+    } else {
+      console.log('Skipping line because not action running to read')
     }
+
   }
 
   const readLoop = async () => {
@@ -181,7 +180,7 @@ export const useFlipperStore = defineStore('flipper', () => {
         }
         
         buffer += value; // Append to buffer and process
-        const lines = buffer.split('\n'); // Process complete lines
+        const lines = buffer.split("\n"); // Process complete lines
         buffer = lines.pop() || ''; // Keep the last incomplete line in the buffer
         
         for (const line of lines) {

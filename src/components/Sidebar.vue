@@ -25,9 +25,9 @@ const flipper = useFlipperStore();
 
 const handleFlipperConnection = async () => {
   if (flipper.isConnected) {
-    await flipper.disconnect();
+    flipper.disconnect();
   } else {
-    await flipper.connect();
+    flipper.connect();
   }
 }
 </script>
