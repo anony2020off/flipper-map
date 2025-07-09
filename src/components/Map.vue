@@ -42,22 +42,10 @@ onMounted(async () => {
           stateName: 'geolocation-button',
           title: 'Center map to current location',
           icon: 'fa-location-crosshairs fa-lg',
-          onClick: () => {
-            if (navigator.geolocation) {
-              navigator.geolocation.getCurrentPosition(
-                (position) => {
-                  const {latitude, longitude} = position.coords;
-                  mapInstance.value.setView([latitude, longitude], defaultZoom);
-                },
-                (error) => {
-                },
-                {
-                  enableHighAccuracy: true,
-                  timeout: 5000,
-                  maximumAge: 0
-                }
-              );
-            }
+          onClick: async () => {
+            await location.getUserLocation();
+            const { latitude, longitude } = location.userLocation;
+            mapInstance.value.setView([latitude, longitude], defaultZoom);
           },
         },
       ],
@@ -79,10 +67,7 @@ onMounted(async () => {
   if (location.geolocationSupported()) {
 
     await location.getUserLocation();
-
     const { latitude, longitude } = location.userLocation;
-
-    console.log([latitude, longitude]);
 
     if (!centerWasSet) {
       mapInstance.value.setView([latitude, longitude], defaultZoom);
