@@ -19,13 +19,12 @@ onMounted(async () => {
   mapInstance.value = L.map('map', {
     center: window.localStorage.getItem('center')?.split(',') ?? [25, 0],
     zoom: window.localStorage.getItem('zoom') ?? 2,
-    attributionControl: false,
     zoomControl: true,
     worldCopyJump: true
   });
 
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+    attribution: 'Made with <span class="text-danger">&hearts;</span> by <a href="https://stichoza.com">Stichoza</a>',
     maxZoom: 19
   }).addTo(mapInstance.value);
 

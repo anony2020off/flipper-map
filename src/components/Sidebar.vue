@@ -8,6 +8,10 @@
       <a href="#" @click="handleFlipperConnection">
         {{ flipper.isConnected ? 'Disconnect' : 'Connect' }}
       </a>
+      <span v-if="flipper.isConnecting">Connecting...</span>
+      <span v-if="flipper.connectionError">{{ flipper.connectionError }}</span>
+      <span v-if="flipper.isSyncing">Syncing...</span>
+      <span v-if="flipper.fileList.length">Scanned {{ flipper.fileList.length }} files</span>
     </div>
   </div>
 </template>
