@@ -1,13 +1,28 @@
 <script setup>
-import {onMounted, ref} from 'vue';
+import {computed, onMounted, ref} from 'vue';
 import Sidebar from './components/Sidebar.vue';
 import Map from './components/Map.vue';
 import {useLocationStore} from "@/stores/location.js";
+import { useFlipperStore } from './stores/flipper';
 
 const location = useLocationStore();
+const flipper = useFlipperStore();
 
 onMounted(async () => {
   await location.getUserLocation();
+});
+
+const pins = computed(() => {
+  const {latitude, longitude} = location.userLocation || {};
+
+  const flipperPins = flipper.fileList.map(file => {
+    const hasCoordinates = file.latitude !== undefined && file.longitude !== undefined && file.latitude !== null && file.longitude !== null;
+    const distance = hasCoordinates ? location.calculateDistance(latitude, longitude, file.latitude, file.longitude) : null;
+
+    return {...file, distance}
+  })
+
+  return flipperPins.sort((a, b) => (a.distance || Infinity) - (b.distance || Infinity))
 });
 </script>
 
@@ -15,7 +30,7 @@ onMounted(async () => {
   <div class="app-container">
     <div class="row g-0 h-100">
       <div class="col-md-2 sidebar-col">
-        <Sidebar />
+        <Sidebar :pins="pins"/>
       </div>
       <div class="col-md-10 map-col">
         <Map />
@@ -36,7 +51,7 @@ html, body {
 }
 
 #app {
-  font-family: Inter, Helvetica, Arial, sans-serif;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   height: 100vh;

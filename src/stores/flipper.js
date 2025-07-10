@@ -110,12 +110,12 @@ export const useFlipperStore = defineStore('flipper', () => {
         console.log(`Processing ${file}`);
         currentFile.value = {
           hash: SHA256(file).toString(),
-          name: file.split('/').pop(),
+          name: file.split('/').pop().split('.').shift(),
           path: file,
           type: {sub: 'subghz', nfc: 'nfc', rfid: 'rfid'}[file.split('.').pop()],
           content: '',
-          latitude: 0,
-          longitude: 0,
+          latitude: null,
+          longitude: null,
           key: '',
         };
         await writer.value.write(`storage read "${file.replace(/\/\/+/g, '/')}"\r\n`);
@@ -224,6 +224,32 @@ export const useFlipperStore = defineStore('flipper', () => {
       console.error("Error disconnecting from Flipper:", error);
     }
   };
+
+  const getFileColor = (type) => {
+    switch (type) {
+      case 'subghz':
+        return '#1aa179';
+      case 'nfc':
+        return '#3d8bfd';
+      case 'rfid':
+        return '#ffc107';
+      default:
+        return '#6c757d';
+    }
+  };
+
+  const getFileIcon = (type) => {
+    switch (type) {
+      case 'subghz':
+        return 'tower-broadcast';
+      case 'nfc':
+        return 'wifi';
+      case 'rfid':
+        return 'id-card-clip';
+      default:
+        return 'question';
+    }
+  };
   
   return {
     port,
@@ -236,6 +262,8 @@ export const useFlipperStore = defineStore('flipper', () => {
     fileList,
     isProcessingFiles,
     isProcessingDirectories,
+    getFileColor,
+    getFileIcon,
     connect,
     disconnect,
     syncFiles

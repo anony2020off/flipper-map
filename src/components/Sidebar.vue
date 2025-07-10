@@ -1,63 +1,87 @@
 <template>
   <div class="sidebar">
     <div class="sidebar-header">
-      
-      <div class="custom-primary-bg text-orange-500 text-white p-3 d-flex justify-content-between align-items-center">
+      <div class="custom-primary-bg text-white p-3 d-flex justify-content-between align-items-center">
         <div class="d-flex align-items-center gap-2">
-          <div class="d-flex align-items-center justify-content-center bg-white rounded p-2" style="width: 40px; height: 40px;">
-            <i class="fas fa-map-marker-alt custom-primary-text fs-5"></i>
+          <div class="d-flex align-items-center justify-content-center bg-white rounded-circle p-1" style="width: 40px; height: 40px;">
+            <i class="fas fa-location-dot custom-primary-text fs-5"></i>
           </div>
           <h1 class="fs-5 fw-bold mb-0">Flipper Map</h1>
         </div>
-        <button 
-        @click="handleFlipperConnection" 
-        :disabled="flipper.isConnecting"
-        :class="['btn btn-sm d-flex align-items-center gap-1', 
-        flipper.isConnected ? 'btn-light' : 'btn-light']">
-        <i :class="['fas', 
-        flipper.isSyncing ? 'fa-sync fa-spin' : (flipper.isConnected ? 'fa-check' : (flipper.isConnecting ? 'fa-spinner fa-spin' : 'fa-plug'))]"></i>
-        <span>
-          {{ flipper.isSyncing ? 'Syncing' : 
-          (flipper.isConnected ? 'Connected' : 
-          (flipper.isConnecting ? 'Connecting...' : 'Connect')) }}
-        </span>
-      </button>
-    </div>
-    
-  </div>
-  <div class="sidebar-content overflow-auto">
-    <div class="p-3 border-bottom">
-      <div class="position-relative">
-        <span class="position-absolute top-50 start-0 translate-middle-y ms-3">
-          <i class="fas fa-search text-muted"></i>
-        </span>
-        <input 
-        type="text" 
-        v-model="searchInput" 
-        @input="handleSearch"
-        placeholder="Search pins..." 
-        class="form-control ps-5"
-        />
+        <button @click="handleFlipperConnection" :disabled="flipper.isConnecting" :class="['btn btn-sm d-flex align-items-center gap-1', flipper.isConnected ? 'btn-light' : 'btn-light']">
+          <i :class="['fas', flipper.isSyncing ? 'fa-sync fa-spin' : (flipper.isConnected ? 'fa-check' : (flipper.isConnecting ? 'fa-spinner fa-spin' : 'fa-plug'))]"></i>
+          <span>{{ flipper.isSyncing ? 'Syncing' : (flipper.isConnected ? 'Connected' : (flipper.isConnecting ? 'Connecting...' : 'Connect')) }}</span>
+        </button>
       </div>
     </div>
-    <p v-if="flipper.isConnecting">Connecting...</p>
-    <p v-if="flipper.connectionError">{{ flipper.connectionError }}</p>
-    <p v-if="flipper.isSyncing">Syncing...</p>
-    <p v-if="flipper.isProcessingFiles">Processing files...</p>
-    <p v-if="flipper.isProcessingDirectories">Processing directories...</p>
-    <p v-if="flipper.fileList.length">Scanned {{ flipper.fileList.length }} files</p>
-    <ul class="list-group">
-      <li v-for="file in flipper.fileList" :key="file.path" class="list-group-item" :data-hash="file.hash">
-        {{ file.path }}
-      </li>
-    </ul>
+    
+    <div class="sidebar-content">
+      
+      <div class="p-3 border-bottom">
+        <div class="position-relative">
+          <span class="position-absolute top-50 start-0 translate-middle-y ms-3">
+            <i class="fas fa-search text-muted"></i>
+          </span>
+          <input type="text" v-model="searchInput" @input="handleSearch" placeholder="Search pins..." class="form-control ps-5">
+        </div>
+      </div>
+      
+      <div class="flex-grow-1 overflow-auto">
+        <div v-if="pins.length === 0" class="d-flex flex-column align-items-center justify-content-center py-5">
+          <p class="text-muted small">No pins found</p>
+        </div>
+      
+        <div v-else>
+          <div class="list-group list-group-flush">
+            <a href="#"
+              v-for="pin in pins" 
+              :key="pin.hash"
+              class="list-group-item list-group-item-action px-3 py-3 overflow-hidden"
+              :class="{'bg-body-secondary': selectedPin && selectedPin.hash === pin.hash}"
+              @click.prevent="selectPin(pin)"
+            >
+              <div class="d-flex align-items-center">
+                <div class="d-flex align-items-center justify-content-center rounded-circle shadow-sm flex-shrink-0" style="width: 46px; height: 46px" :style="{ backgroundColor: flipper.getFileColor(pin.type) }">
+                  <i :class="['fas', `fa-${flipper.getFileIcon(pin.type)}`, 'text-white']"></i>
+                </div>
+                <div class="flex-grow-1 min-width-0 mx-3 overflow-hidden" :class="pin.distance ? '' : 'opacity-75'">
+                  <p class="mb-0 fw-medium small text-truncate">{{ pin.name }}</p>
+                  <div class="mb-0 text-muted small d-flex align-items-center text-truncate">
+                    <div v-if="pin.distance">
+                      <i class="fas fa-location-dot me-1 small flex-shrink-0"></i>
+                      <span class="text-truncate">{{ pin.distance < 1 ? `${(pin.distance * 1000).toFixed(0)} m` : `${pin.distance.toFixed(2)} km` }} away</span>
+                    </div>
+                    <div v-else>
+                      <i class="fas fa-location-pin-lock me-1 small flex-shrink-0"></i>
+                      <span class="text-truncate">No location</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="flex-shrink-0">
+                  <i class="fas fa-chevron-right text-muted"></i>
+                </div>
+              </div>
+            </a>
+          </div>
+        </div>
+      </div>
+
+    </div>
   </div>
-</div>
 </template>
 
 <script setup>
 import {useFlipperStore} from "@/stores/flipper.js";
+import { ref } from "vue";
 
+const props = defineProps({
+  pins: {
+    type: Array,
+    required: true
+  }
+});
+
+const selectedPin = ref(null);
 const flipper = useFlipperStore();
 
 const handleFlipperConnection = async () => {
@@ -67,6 +91,11 @@ const handleFlipperConnection = async () => {
     flipper.connect();
   }
 }
+
+const selectPin = (pin) => {
+  selectedPin.value = pin;
+}
+
 </script>
 
 <style scoped>
@@ -75,5 +104,37 @@ const handleFlipperConnection = async () => {
   width: 100%;
   background-color: #f8f9fa;
   border-right: 1px solid #dee2e6;
+}
+
+.custom-primary-bg {
+  background-color: #ff8200;
+}
+
+.custom-primary-bg-light {
+  background-color: rgba(255, 130, 0, 0.1);
+}
+
+.custom-primary-text {
+  color: #ff8200;
+}
+
+.custom-primary-border {
+  border-color: rgba(255, 130, 0, 0.25);
+}
+
+.custom-primary-btn {
+  color: #fff;
+  background-color: #ff8200;
+  border-color: #ff8200;
+}
+
+.custom-primary-btn:hover {
+  color: #fff;
+  background-color: #e67600;
+  border-color: #d96e00;
+}
+
+.custom-primary-btn:focus {
+  box-shadow: 0 0 0 0.25rem rgba(255, 130, 0, 0.5);
 }
 </style>
