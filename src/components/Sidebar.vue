@@ -89,6 +89,7 @@ const props = defineProps({
 });
 
 const flipper = useFlipperStore();
+const searchInput = ref(props.searchQuery);
 
 const handleFlipperConnection = async () => {
   if (flipper.isConnected) {
@@ -97,6 +98,10 @@ const handleFlipperConnection = async () => {
     flipper.connect();
   }
 }
+
+const handleSearch = () => {
+  emit('search', searchInput.value);
+};
 
 </script>
 

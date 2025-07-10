@@ -3,11 +3,27 @@
 </template>
 
 <script setup>
-import { onMounted, onUnmounted, ref } from 'vue';
+import { onMounted, onUnmounted, ref, watch } from 'vue';
 import { useLocationStore } from "@/stores/location.js";
 import { useFlipperStore } from "@/stores/flipper.js";
 
-const mapInstance = ref(null);
+const props = defineProps({
+  pins: {
+    type: Array,
+    required: true
+  },
+  searchQuery: {
+    type: String,
+    default: ''
+  },
+  selectedPin: {
+    type: Object,
+    default: null
+  }
+});
+
+const map = ref(null);
+const markers = ref([]);
 const userMarker = ref(null);
 const defaultZoom = 15;
 
@@ -16,7 +32,7 @@ const flipper = useFlipperStore()
 
 onMounted(async () => {
 
-  mapInstance.value = L.map('map', {
+  map.value = L.map('map', {
     center: window.localStorage.getItem('center')?.split(',') ?? [25, 0],
     zoom: window.localStorage.getItem('zoom') ?? 2,
     zoomControl: true,
@@ -32,12 +48,12 @@ onMounted(async () => {
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '<span>Made in ' + flag + ' with <span class="text-danger">&hearts;</span> by <a href="https://stichoza.com">Stichoza</a></span>',
     maxZoom: 19
-  }).addTo(mapInstance.value);
+  }).addTo(map.value);
 
   // Clusters
-  const markers = L.markerClusterGroup({
-    maxClusterRadius: zoom => zoom < 3 ? 40 : 30,
-  }).addTo(mapInstance.value);
+  // const markers = L.markerClusterGroup({
+  //   maxClusterRadius: zoom => zoom < 3 ? 40 : 30,
+  // }).addTo(map.value);
 
   // Move to current location
   if (location.geolocationSupported()) {
@@ -51,11 +67,11 @@ onMounted(async () => {
           onClick: async () => {
             await location.getUserLocation();
             const { latitude, longitude } = location.userLocation;
-            mapInstance.value.setView([latitude, longitude], defaultZoom);
+            map.value.setView([latitude, longitude], defaultZoom);
           },
         },
       ],
-    }).addTo(mapInstance.value)
+    }).addTo(map.value)
   }
 
   let centerWasSet = false;
@@ -63,7 +79,7 @@ onMounted(async () => {
   // Center map to last known coordinates and zoom level
   if (window.localStorage.getItem('center')) {
     centerWasSet = true;
-    mapInstance.value.setView(
+    map.value.setView(
       window.localStorage.getItem('center')?.split(',') ?? [25, 0],
       window.localStorage.getItem('zoom') ?? defaultZoom
     );
@@ -76,7 +92,7 @@ onMounted(async () => {
     const { latitude, longitude } = location.userLocation;
 
     if (!centerWasSet) {
-      mapInstance.value.setView([latitude, longitude], defaultZoom);
+      map.value.setView([latitude, longitude], defaultZoom);
     }
 
     const pulsingIcon = L.divIcon({
@@ -87,26 +103,40 @@ onMounted(async () => {
     });
 
     userMarker.value = L.marker([latitude, longitude], { icon: pulsingIcon })
-      .addTo(mapInstance.value)
+      .addTo(map.value)
       .bindTooltip('Your Location', {opacity: .9});
   }
 
   // Save center locally
-  mapInstance.value.on('moveend', () => {
-    const center = mapInstance.value.getCenter()
+  map.value.on('moveend', () => {
+    const center = map.value.getCenter()
     window.localStorage.setItem('center', [center.lat, center.lng].join(','))
   })
 
   // Save zoom level locally
-  mapInstance.value.on('zoomend', () => {
-    window.localStorage.setItem('zoom', mapInstance.value.getZoom())
+  map.value.on('zoomend', () => {
+    window.localStorage.setItem('zoom', map.value.getZoom())
   })
 
 });
 
+const clearMarkers = () => {
+  markers.value.forEach(marker => {
+    marker.remove();
+  });
+  markers.value = [];
+};
+
+watch(() => props.pins, () => {
+  if (map.value) {
+    //clearMarkers();
+    //addMarkers();
+  }
+}, { deep: true });
+
 onUnmounted(() => {
-  if (mapInstance.value) {
-    mapInstance.value.remove();
+  if (map.value) {
+    map.value.remove();
   }
 });
 </script>

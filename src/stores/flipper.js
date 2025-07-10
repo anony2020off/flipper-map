@@ -134,8 +134,6 @@ export const useFlipperStore = defineStore('flipper', () => {
   };
 
   const processLine = (line) => {
-    console.log("Flipper output:", line);
-
     if (isSyncing.value && isProcessingDirectories.value) {
       const matches = line.match(/\[\F\]\s+(\/ext\/(subghz|nfc|lfrfid)\/[A-Za-z0-9_\-\s\./\(\)]+\.(sub|nfc|rfid))\s\d+b/m)
 
@@ -164,10 +162,7 @@ export const useFlipperStore = defineStore('flipper', () => {
       if (line.toLowerCase().startsWith('raw:')) {
         currentFile.value.key = 'RAW';
       }
-    } else {
-      console.log('Skipping line because not action running to read')
     }
-
   }
 
   const readLoop = async () => {

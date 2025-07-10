@@ -30,6 +30,10 @@ const pins = computed(() => {
 const selectPin = (pin) => {
   selectedPin.value = pin;
 };
+
+const handleSearch = (query) => {
+  searchQuery.value = query;
+};
 </script>
 
 <template>
