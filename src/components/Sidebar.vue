@@ -78,10 +78,17 @@ const props = defineProps({
   pins: {
     type: Array,
     required: true
+  },
+  searchQuery: {
+    type: String,
+    default: ''
+  },
+  selectedPin: {
+    type: Object,
+    default: null
   }
 });
 
-const selectedPin = ref(null);
 const flipper = useFlipperStore();
 
 const handleFlipperConnection = async () => {
@@ -90,10 +97,6 @@ const handleFlipperConnection = async () => {
   } else {
     flipper.connect();
   }
-}
-
-const selectPin = (pin) => {
-  selectedPin.value = pin;
 }
 
 </script>
