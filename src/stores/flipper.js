@@ -241,7 +241,7 @@ export const useFlipperStore = defineStore('flipper', () => {
   const getFileIcon = (type) => {
     switch (type) {
       case 'subghz':
-        return 'tower-broadcast';
+        return 'wave-square';
       case 'nfc':
         return 'wifi';
       case 'rfid':

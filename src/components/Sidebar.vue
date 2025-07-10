@@ -14,10 +14,8 @@
         </button>
       </div>
     </div>
-    
-    <div class="sidebar-content">
-      
-      <div class="p-3 border-bottom">
+
+    <div class="sidebar-search p-3 border-bottom">
         <div class="position-relative">
           <span class="position-absolute top-50 start-0 translate-middle-y ms-3">
             <i class="fas fa-search text-muted"></i>
@@ -25,7 +23,8 @@
           <input type="text" v-model="searchInput" @input="handleSearch" placeholder="Search pins..." class="form-control ps-5">
         </div>
       </div>
-      
+    
+    <div class="sidebar-content overflow-auto h-100">
       <div class="flex-grow-1 overflow-auto">
         <div v-if="pins.length === 0" class="d-flex flex-column align-items-center justify-content-center py-5">
           <p class="text-muted small">No pins found</p>
