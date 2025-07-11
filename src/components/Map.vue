@@ -61,7 +61,7 @@ onMounted(async () => {
     zoom: window.localStorage.getItem('zoom') ?? 2,
     zoomControl: true,
     worldCopyJump: true,
-    layers: Object.values(layers)
+    layers: [Object.values(layers)[0]], //Object.values(layers)
   });
 
   L.control.layers(layers).addTo(toRaw(map.value));
