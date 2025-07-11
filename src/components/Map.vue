@@ -42,18 +42,25 @@ onMounted(async () => {
   const attribution = '<span>Made in ' + flag + ' with <span class="text-danger">&hearts;</span> by <a href="https://stichoza.com">Stichoza</a></span>';
 
   const layers = {
-    'OpenStreetMaps': L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: attribution,
-      maxZoom: 19
+    'Minimal (Normal)': L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OSM</a> &copy; <a href="https://carto.com/attributions" target="_blank" rel="noopener">CARTO</a> | ' + attribution,
+      subdomains: 'abcd',
+      maxZoom: 20
     }),
-    'NAPR (Georgia)': L.tileLayer('https://nt0.napr.gov.ge/NGCache?x={x}&y={y}&z={z}&l=ORTHO_GEORGIA_4', {
-      attribution: attribution,
-      maxZoom: 19
+    'Minimal (Light)': L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OSM</a> &copy; <a href="https://carto.com/attributions" target="_blank" rel="noopener">CARTO</a> | ' + attribution,
+      subdomains: 'abcd',
+      maxZoom: 20
     }),
-    'Minimal': L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-      attribution: attribution,
-      maxZoom: 19
-    })
+    'Minimal (Dark)': L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OSM</a> &copy; <a href="https://carto.com/attributions" target="_blank" rel="noopener">CARTO</a> | ' + attribution,
+      subdomains: 'abcd',
+      maxZoom: 20
+    }),
+    'NAPR Satellite (Georgia)': L.tileLayer('https://nt0.napr.gov.ge/NGCache?x={x}&y={y}&z={z}&l=ORTHO_GEORGIA_4', {
+      attribution: '&copy; <a href="https://www.napr.gov.ge/en" target="_blank" rel="noopener">NAPR</a> | ' + attribution,
+      maxZoom: 20
+    }),
   };
 
   map.value = L.map('map', {
