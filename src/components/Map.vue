@@ -23,6 +23,7 @@ const props = defineProps({
 });
 
 const map = ref(null);
+const clusters = ref(null);
 const markers = ref({});
 const userMarker = ref(null);
 const defaultZoom = 15;
@@ -48,12 +49,14 @@ onMounted(async () => {
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '<span>Made in ' + flag + ' with <span class="text-danger">&hearts;</span> by <a href="https://stichoza.com">Stichoza</a></span>',
     maxZoom: 19
-  }).addTo(map.value);
+  }).addTo(toRaw(map.value));
 
   // Clusters
-  // const markersz = L.markerClusterGroup({
-  //   maxClusterRadius: zoom => zoom < 3 ? 40 : 30,
-  // }).addTo(map.value);
+  clusters.value = L.markerClusterGroup({
+    maxClusterRadius: zoom => zoom < 3 ? 40 : 30,
+    animateAddingMarkers: true,
+    disableClusteringAtZoom: 15
+  }).addTo(toRaw(map.value));
 
   // Move to current location
   if (location.geolocationSupported()) {
@@ -71,7 +74,7 @@ onMounted(async () => {
           },
         },
       ],
-    }).addTo(map.value)
+    }).addTo(toRaw(map.value))
   }
 
   let centerWasSet = false;
@@ -149,7 +152,7 @@ const addMarkers = () => {
 
   props.pins.forEach(file => {
     if (!existingPins.includes(file.hash) && file.latitude && file.longitude) {
-      markers.value[file.hash] = createMarker(file).addTo(toRaw(map.value));
+      markers.value[file.hash] = createMarker(file).addTo(toRaw(clusters.value));
     }
   });
 }
