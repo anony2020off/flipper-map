@@ -178,7 +178,10 @@ const createMarker = file => {
   const cleanContent = file.content.replace(/^(>|size:).*$/gmi, '').trim();
   const key = file.key.replace(/00\s/g, '');
   const frequency = file.content.match(/frequency:\s*(\d+)/i)?.[1];
+  const protocol = file.content.match(/protocol:\s*(.+)/i)?.[1];
+  const bit = file.content.match(/bit:\s*(.+)/i)?.[1];
   const uid = file.content.match(/uid:\s*(.+)/i)?.[1];
+  const type = {subghz: 'Sub-GHz', nfc: 'NFC', rfid: 'RFID'}[file.type] ?? file.type;
 
   let distanceText = '';
   if (file.distance !== undefined && file.distance !== null) {
@@ -210,8 +213,9 @@ const createMarker = file => {
         <h6 class="m-0 flex-grow-1 text-truncate">${file.name}</h6>
       </div>
       <div>
-        <div class="mb-1"><strong>Type:</strong> ${file.type}</div>
+        <div class="mb-1"><strong>Type:</strong> ${type}</div>
         ${frequency ? `<div class="mb-1"><strong>Frequency:</strong> ${frequency/1000000} MHz</div>` : ''}
+        ${protocol ? `<div class="mb-1"><strong>Protocol:</strong> ${protocol} ${bit ? `(${bit} bit)` : ''}</div>` : ''}
         ${key ? `<div class="mb-1"><strong>Key:</strong> ${key}</div>` : ''}
         ${uid ? `<div class="mb-1"><strong>UID:</strong> ${uid}</div>` : ''}
         <div class="mb-1"><strong>Distance:</strong> ${distanceText}</div>
