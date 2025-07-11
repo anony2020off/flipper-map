@@ -10,6 +10,7 @@ export const useFlipperStore = defineStore('flipper', () => {
   const isConnecting = ref(false);
   const isSyncing = ref(false);
   const connectionError = ref(null);
+  const generalError = ref(null);
   const fileList = ref([]);
   const fileReadQueue = ref([]);
   const isProcessingFiles = ref(false);
@@ -163,6 +164,11 @@ export const useFlipperStore = defineStore('flipper', () => {
         currentFile.value.key = 'RAW';
       }
     }
+
+    if (line.toLowerCase().startsWith('loader is locked')) {
+      generalError.value = line.trim();
+      setTimeout(() => generalError.value = null, 50);
+    }
   }
 
   const readLoop = async () => {
@@ -270,6 +276,7 @@ export const useFlipperStore = defineStore('flipper', () => {
     isConnecting,
     isSyncing,
     connectionError,
+    generalError,
     fileList,
     fileByHash,
     isProcessingFiles,

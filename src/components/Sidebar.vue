@@ -111,6 +111,7 @@ watch(() => flipper.isSyncing, () => {
       duration: 5000,
       gravity: "bottom",
       position: "center",
+      backgroundColor: "#28a745",
     }).showToast();
   }
 });

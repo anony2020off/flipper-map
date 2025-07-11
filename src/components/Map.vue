@@ -244,13 +244,6 @@ const addMarkers = () => {
 window.jsLaunchFile = (hash) => {
   const file = flipper.fileByHash(hash);
   flipper.launchFile(file);
-
-  Toastify({
-    text: `Launching ${file.name}...`,
-    duration: 5000,
-    gravity: "bottom",
-    position: "center",
-  }).showToast();
 }
 
 watch(() => props.pins, () => {
