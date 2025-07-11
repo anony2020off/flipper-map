@@ -69,7 +69,7 @@ onMounted(async () => {
     zoom: window.localStorage.getItem('zoom') ?? 2,
     zoomControl: true,
     worldCopyJump: true,
-    layers: [Object.values(layers)[0]], //Object.values(layers)
+    layers: layers[window.localStorage.getItem('baseLayer') ?? 'Minimal (Normal)'], // Object.values(layers)
   });
 
   // Clusters
@@ -140,6 +140,10 @@ onMounted(async () => {
   // Save zoom level locally
   map.value.on('zoomend', () => {
     window.localStorage.setItem('zoom', map.value.getZoom())
+  })
+
+  map.value.on('baselayerchange', (e) => {
+    window.localStorage.setItem('baseLayer', e.name)
   })
 
   L.easyButton({
