@@ -20,7 +20,7 @@
           <span class="position-absolute top-50 start-0 translate-middle-y ms-3">
             <i class="fas fa-search text-muted"></i>
           </span>
-          <input type="text" v-model="searchInput" @input="handleSearch" placeholder="Search pins..." class="form-control ps-5">
+          <input type="text" v-model="searchInput" @input="handleSearch" :placeholder="`Search${flipper.fileList.length ? ' ' + flipper.fileList.length + ' pins' : ''}...`" class="form-control ps-5">
         </div>
       </div>
     
