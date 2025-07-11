@@ -4,6 +4,7 @@
 
 <script setup>
 import { onMounted, onUnmounted, ref, toRaw, watch } from 'vue';
+import Toastify from 'toastify-js';
 import { useLocationStore } from "@/stores/location.js";
 import { useFlipperStore } from "@/stores/flipper.js";
 
@@ -170,6 +171,19 @@ const createMarker = file => {
   const color = flipper.getFileColor(file.type);
   const icon = flipper.getFileIcon(file.type);
 
+  const cleanContent = file.content.replace(/^(>|size:).*$/gmi, '').trim();
+
+  let distanceText = '';
+  if (file.distance !== undefined && file.distance !== null) {
+    if (file.distance < 1) {
+      distanceText = `${Math.round(file.distance * 1000)}m`;
+    } else if (file.distance < 10) {
+      distanceText = `${file.distance.toFixed(1)}km`;
+    } else {
+      distanceText = `${file.distance.toFixed(0)}km`;
+    }
+  }
+
   return L.marker([file.latitude, file.longitude], {
     title: file.name,
     riseOnHover: true,
@@ -180,10 +194,35 @@ const createMarker = file => {
       iconAnchor: [14, 14],
       popupAnchor: [0, -14],
     }),
-  }).bindTooltip(file.name, {
-    offset: [0, -20],
-    direction: 'top'
-  });
+  })
+  .bindPopup(
+    `<div class="custom-popup">
+      <div class="d-flex align-items-center gap-2 mb-2 pb-2 border-bottom">
+        <div class="flex-shrink-0 rounded-circle d-flex justify-content-center align-items-center" style="background-color: ${color}; width: 24px; height: 24px">
+          <i class="fas fa-${icon} text-white"></i>
+        </div>
+        <h6 class="m-0 flex-grow-1 text-truncate">${file.name}</h6>
+      </div>
+      <div>
+        <div class="mb-1"><strong>Type:</strong> ${file.type}</div>
+        <div class="mb-1"><strong>Distance:</strong> ${distanceText}</div>
+        <div class="mb-1"><strong>Path:</strong> ${file.path}</div>
+      </div>
+      <details>
+        <summary><strong>File content</strong></summary>
+        <pre class="mt-2 card p-2 bg-body-secondary">${cleanContent}</pre>
+      </details>`
+      + (file.type === 'subghz' ? `<div class="mt-2">
+        <button class="btn btn-sm btn-secondary w-100 d-flex align-items-center" onclick="jsLaunchFile('${file.hash}')">
+          <span class="flex-grow-1 ps-3">Launch on Flipper</span>
+          <i class="fas fa-square-arrow-up-right pull-right"></i></button>
+      </div>` : '')
+    + '</div>'
+  )
+  // .bindTooltip(file.name, {
+  //   offset: [0, -20],
+  //   direction: 'top'
+  // })
 }
 
 const addMarkers = () => {
@@ -194,6 +233,18 @@ const addMarkers = () => {
       markers.value[file.hash] = createMarker(file).addTo(toRaw(clusters.value));
     }
   });
+}
+
+window.jsLaunchFile = (hash) => {
+  const file = flipper.fileByHash(hash);
+  flipper.launchFile(file);
+
+  Toastify({
+    text: `Launching ${file.name}...`,
+    duration: 5000,
+    gravity: "bottom",
+    position: "center",
+  }).showToast();
 }
 
 watch(() => props.pins, () => {
@@ -216,7 +267,8 @@ onUnmounted(() => {
 }
 
 :deep(.custom-popup) {
-  width: 240px;
+  width: 280px;
+  font-family: Roboto, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif !important;
 }
 
 :deep(.user-location-marker) {

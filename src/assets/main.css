@@ -1,1 +1,12 @@
+.toastify {
+    font-family: 'Roboto', sans-serif;
+    font-size: 14px;
+    background: #ff8200;
+    border-radius: 30px;
+    padding: 8px 25px;
+}
 
+.toastify .toast-close {
+    position: relative;
+    left: 10px;
+}

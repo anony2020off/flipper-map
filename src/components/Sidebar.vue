@@ -72,8 +72,9 @@
 </template>
 
 <script setup>
-import {useFlipperStore} from "@/stores/flipper.js";
-import { ref } from "vue";
+import { useFlipperStore } from "@/stores/flipper.js";
+import { ref, watch } from "vue";
+import Toastify from 'toastify-js';
 
 const props = defineProps({
   pins: {
@@ -102,6 +103,17 @@ const handleFlipperConnection = async () => {
     flipper.connect();
   }
 }
+
+watch(() => flipper.isSyncing, () => {
+  if (!flipper.isSyncing) {
+    Toastify({
+      text: `Discovered ${flipper.fileList.length} files`,
+      duration: 5000,
+      gravity: "bottom",
+      position: "center",
+    }).showToast();
+  }
+});
 
 const handleSearch = () => {
   emit('search', searchInput.value);

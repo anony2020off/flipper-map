@@ -222,6 +222,10 @@ export const useFlipperStore = defineStore('flipper', () => {
     }
   };
 
+  const fileByHash = (hash) => {
+    return fileList.value.find(file => file.hash === hash);
+  };
+
   const launchFile = async (file) => {
     if (!writer.value || !isConnected.value) return;
 
@@ -267,6 +271,7 @@ export const useFlipperStore = defineStore('flipper', () => {
     isSyncing,
     connectionError,
     fileList,
+    fileByHash,
     isProcessingFiles,
     isProcessingDirectories,
     getFileColor,
