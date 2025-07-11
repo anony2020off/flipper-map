@@ -33,23 +33,30 @@ const flipper = useFlipperStore()
 
 onMounted(async () => {
 
-  map.value = L.map('map', {
-    center: window.localStorage.getItem('center')?.split(',') ?? [25, 0],
-    zoom: window.localStorage.getItem('zoom') ?? 2,
-    zoomControl: true,
-    worldCopyJump: true
-  });
-
   const flag = `
     <svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-ge" viewBox="0 0 640 480" width="12" height="8" class="leaflet-attribution-flag">
       <path fill="#fff" d="M0 0h640v480H0z"/><path fill="red" d="M272 0h96v480h-96z"/><path fill="red" d="M0 192h640v96H0z"/>
       <path fill="red" fill-rule="evenodd" d="M146.8 373.1c1-16.8 4-31.1 4-31.1s-9.8 1-14.8 1-14.8-1-14.8-1 3 14.3 4 31.2c-16.9-1-31.2-4-31.2-4s1 7.4 1 14.8-1 14.8-1 14.8 14.3-3 31.2-4c-1 16.9-4 31.2-4 31.2s7.4-1 14.8-1 14.8 1 14.8 1-3-14.3-4-31.2c16.9 1 31.2 4 31.2 4s-1-9.8-1-14.8 1-14.8 1-14.8-14.3 3-31.1 4zm368-288c1-16.8 4-31.1 4-31.1s-9.8 1-14.8 1-14.8-1-14.8-1 3 14.3 4 31.1c-16.9-1-31.2-3.9-31.2-3.9s1 7.4 1 14.8-1 14.8-1 14.8 14.3-3 31.2-4c-1 16.9-4 31.2-4 31.2s7.4-1 14.8-1 14.8 1 14.8 1-3-14.3-4-31.1c16.9 1 31.2 4 31.2 4s-1-10-1-14.9 1-14.8 1-14.8-14.3 3-31.2 4zm-368 0c1-16.8 4-31.1 4-31.1s-9.8 1-14.8 1-14.8-1-14.8-1 3 14.3 4 31.2c-16.9-1-31.2-4-31.2-4s1 7.4 1 14.8-1 14.8-1 14.8 14.3-3 31.2-4c-1 16.9-4 31.2-4 31.2s7.4-1 14.8-1 14.8 1 14.8 1-3-14.3-4-31.1c16.9 1 31.2 4 31.2 4s-1-9.8-1-14.8 1-14.8 1-14.8-14.3 3-31.1 4zm368 288c1-16.8 4-31.1 4-31.1s-9.8 1-14.8 1-14.8-1-14.8-1 3 14.3 4 31.2c-16.9-1-31.2-4-31.2-4s1 7.4 1 14.8-1 14.8-1 14.8 14.3-3 31.2-4c-1 16.9-4 31.2-4 31.2s7.4-1 14.8-1 14.8 1 14.8 1-3-14.3-4-31.2c16.9 1 31.2 4 31.2 4s-1-9.8-1-14.8 1-14.8 1-14.8-14.3 3-31.2 4z"/>
     </svg>`;
 
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+  const minimalLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
     attribution: '<span>Made in ' + flag + ' with <span class="text-danger">&hearts;</span> by <a href="https://stichoza.com">Stichoza</a></span>',
     maxZoom: 19
-  }).addTo(toRaw(map.value));
+  });
+  const osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '<span>Made in ' + flag + ' with <span class="text-danger">&hearts;</span> by <a href="https://stichoza.com">Stichoza</a></span>',
+    maxZoom: 19
+  });
+
+  map.value = L.map('map', {
+    center: window.localStorage.getItem('center')?.split(',') ?? [25, 0],
+    zoom: window.localStorage.getItem('zoom') ?? 2,
+    zoomControl: true,
+    worldCopyJump: true,
+    layers: [osmLayer, minimalLayer]
+  });
+
+  L.control.layers({'OpenStreetMaps': osmLayer, 'Minimal': minimalLayer}).addTo(toRaw(map.value));
 
   // Clusters
   clusters.value = L.markerClusterGroup({
