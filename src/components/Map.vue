@@ -176,6 +176,7 @@ const createMarker = file => {
   const icon = flipper.getFileIcon(file.type);
 
   const cleanContent = file.content.replace(/^(>|size:).*$/gmi, '').trim();
+  const key = file.key.replace(/00\s/g, '');
 
   let distanceText = '';
   if (file.distance !== undefined && file.distance !== null) {
@@ -209,12 +210,13 @@ const createMarker = file => {
       </div>
       <div>
         <div class="mb-1"><strong>Type:</strong> ${file.type}</div>
+        ${key ? `<div class="mb-1"><strong>Key:</strong> ${key}</div>` : ''}
         <div class="mb-1"><strong>Distance:</strong> ${distanceText}</div>
         <div class="mb-1"><strong>Path:</strong> ${file.path}</div>
       </div>
       <details>
         <summary><strong>File content</strong></summary>
-        <pre class="mt-2 card p-2 bg-body-secondary">${cleanContent}</pre>
+        <pre class="mt-2 card p-2 bg-body-secondary" style="max-height: 210px">${cleanContent}</pre>
       </details>`
       + (file.type === 'subghz' ? `<div class="mt-2">
         <button class="btn btn-sm btn-secondary w-100 d-flex align-items-center" onclick="jsLaunchFile('${file.hash}')">

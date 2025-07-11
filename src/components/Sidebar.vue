@@ -3,7 +3,7 @@
     <div class="sidebar-header">
       <div class="custom-primary-bg text-white p-3 d-flex justify-content-between align-items-center">
         <div class="d-flex align-items-center gap-2">
-          <div class="d-flex align-items-center justify-content-center bg-white rounded-circle p-1" style="width: 40px; height: 40px;">
+          <div class="d-flex align-items-center justify-content-center bg-white rounded-circle p-1" style="width: 36px; height: 36px;">
             <i class="fas fa-location-dot custom-primary-text fs-5"></i>
           </div>
           <h1 class="fs-5 mb-0 app-title">Flipper Map</h1>
