@@ -40,10 +40,10 @@ const handleSearch = (query) => {
 <template>
   <div class="app-container">
     <div class="row g-0 h-100">
-      <div class="col-md-2 sidebar-col">
+      <div class="col sidebar-col" style="max-width: 320px;">
         <Sidebar :pins="pins" @search="handleSearch" :searchQuery="searchQuery" @select-pin="selectPin" v-model:selectedPin="selectedPin"/>
       </div>
-      <div class="col-md-10 map-col">
+      <div class="col map-col">
         <Map :pins="pins" v-model:selectedPin="selectedPin"/>
       </div>
     </div>
