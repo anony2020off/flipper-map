@@ -88,6 +88,8 @@ const props = defineProps({
   }
 });
 
+const emit = defineEmits(['search', 'select-pin']);
+
 const flipper = useFlipperStore();
 const searchInput = ref(props.searchQuery);
 

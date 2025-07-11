@@ -3,7 +3,7 @@
 </template>
 
 <script setup>
-import { onMounted, onUnmounted, ref, watch } from 'vue';
+import { onMounted, onUnmounted, ref, toRaw, watch } from 'vue';
 import { useLocationStore } from "@/stores/location.js";
 import { useFlipperStore } from "@/stores/flipper.js";
 
@@ -23,7 +23,7 @@ const props = defineProps({
 });
 
 const map = ref(null);
-const markers = ref([]);
+const markers = ref({});
 const userMarker = ref(null);
 const defaultZoom = 15;
 
@@ -51,7 +51,7 @@ onMounted(async () => {
   }).addTo(map.value);
 
   // Clusters
-  // const markers = L.markerClusterGroup({
+  // const markersz = L.markerClusterGroup({
   //   maxClusterRadius: zoom => zoom < 3 ? 40 : 30,
   // }).addTo(map.value);
 
@@ -103,7 +103,7 @@ onMounted(async () => {
     });
 
     userMarker.value = L.marker([latitude, longitude], { icon: pulsingIcon })
-      .addTo(map.value)
+      .addTo(toRaw(map.value))
       .bindTooltip('Your Location', {opacity: .9});
   }
 
@@ -127,10 +127,36 @@ const clearMarkers = () => {
   markers.value = [];
 };
 
+const createMarker = file => {
+  const color = flipper.getFileColor(file.type);
+  const icon = flipper.getFileIcon(file.type);
+
+  return L.marker([file.latitude, file.longitude], {
+    title: file.name,
+    riseOnHover: true,
+    icon: L.divIcon({
+      className: 'custom-map-marker',
+      html: `<div style="background-color: ${color}"><i class="fas fa-${icon}"></i></div>`,
+      iconSize: [20, 20],
+      iconAnchor: [10, 10],
+      popupAnchor: [0, -10],
+    }),
+  }).bindTooltip(file.name, {opacity: .9});
+}
+
+const addMarkers = () => {
+  const existingPins = Object.keys(markers.value);
+
+  props.pins.forEach(file => {
+    if (!existingPins.includes(file.hash) && file.latitude && file.longitude) {
+      markers.value[file.hash] = createMarker(file).addTo(toRaw(map.value));
+    }
+  });
+}
+
 watch(() => props.pins, () => {
   if (map.value) {
-    //clearMarkers();
-    //addMarkers();
+    addMarkers();
   }
 }, { deep: true });
 
@@ -149,6 +175,13 @@ onUnmounted(() => {
 
 :deep(.user-location-marker) {
   background: transparent;
+}
+
+:deep(.custom-map-marker > div) {
+  display: block;
+  height: 100%;
+  width: 100%;
+  border-radius: 50%;
 }
 
 :deep(.pulse) {
