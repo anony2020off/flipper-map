@@ -77,6 +77,20 @@ onMounted(async () => {
     }).addTo(toRaw(map.value))
   }
 
+  L.easyButton({
+    position: 'topleft',
+    states: [
+      {
+        stateName: 'clustering-button',
+        title: 'Toggle clustering',
+        icon: 'fa-circle-nodes fa-lg',
+        onClick: async () => {
+          // TODO: Toggle clustering
+        },
+      },
+    ],
+  }).addTo(toRaw(map.value))
+
   let centerWasSet = false;
 
   // Center map to last known coordinates and zoom level
