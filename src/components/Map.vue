@@ -180,6 +180,9 @@ const createMarker = file => {
       iconAnchor: [14, 14],
       popupAnchor: [0, -14],
     }),
+  }).bindTooltip(file.name, {
+    offset: [0, -20],
+    direction: 'top'
   });
 }
 
