@@ -36,7 +36,7 @@
               v-for="pin in pins" 
               :key="pin.hash"
               class="list-group-item list-group-item-action px-3 py-3 overflow-hidden"
-              :class="{'bg-body-secondary': selectedPin && selectedPin.hash === pin.hash}"
+              :class="{'bg-body-secondary': selectedPin && selectedPin.hash === pin.hash, 'd-none': !pin.visible}"
               @click.prevent="selectPin(pin)"
             >
               <div class="d-flex align-items-center">
