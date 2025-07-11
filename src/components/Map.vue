@@ -202,8 +202,7 @@ const createMarker = file => {
       popupAnchor: [0, -14],
     }),
   })
-  .bindPopup(
-    `<div class="custom-popup">
+  .bindPopup(`<div class="custom-popup">
       <div class="d-flex align-items-center gap-2 mb-2 pb-2 border-bottom">
         <div class="flex-shrink-0 rounded-circle d-flex justify-content-center align-items-center" style="background-color: ${color}; width: 24px; height: 24px">
           <i class="fas fa-${icon} text-white"></i>
@@ -227,8 +226,10 @@ const createMarker = file => {
           <span class="flex-grow-1 ps-3">Launch on Flipper</span>
           <i class="fas fa-square-arrow-up-right pull-right"></i></button>
       </div>` : '')
-    + '</div>'
-  )
+    + '</div>', {
+    closeButton: false,
+    autoPanPadding: [60, 20]
+  })
 }
 
 const addMarkers = () => {
