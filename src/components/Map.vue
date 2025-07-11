@@ -215,6 +215,10 @@ onUnmounted(() => {
   width: 100%;
 }
 
+:deep(.custom-popup) {
+  width: 240px;
+}
+
 :deep(.user-location-marker) {
   background: transparent;
 }
@@ -231,6 +235,7 @@ onUnmounted(() => {
   border: 2px solid #fff;
   border-radius: 50%;
   box-sizing: border-box;
+  cursor: pointer;
 }
 
 :deep(.custom-map-marker > div i) {
