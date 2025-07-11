@@ -15,6 +15,8 @@ export const useFlipperStore = defineStore('flipper', () => {
   const fileReadQueue = ref([]);
   const isProcessingFiles = ref(false);
   const isProcessingDirectories = ref(false);
+  const hardwareName = ref(null);
+  const hardwareModel = ref(null);
   const currentFile = ref({
     hash: '',
     name: '',
@@ -52,8 +54,10 @@ export const useFlipperStore = defineStore('flipper', () => {
       textEncoder.readable.pipeTo(port.value.writable);
       writer.value = textEncoder.writable.getWriter();
       
-      // Send initial command to ensure we're in CLI mode
-      await writer.value.write("\r\n");
+      readLoop(); // Start infinite reading loop
+      
+      // Send initial command to ensure we're in CLI mode (and ger device details)
+      await writer.value.write("!\r\n");
       
       // Wait a bit for the device to respond
       await new Promise(resolve => setTimeout(resolve, 1500));
@@ -62,7 +66,6 @@ export const useFlipperStore = defineStore('flipper', () => {
       isConnected.value = true;
       isConnecting.value = false;
 
-      readLoop(); // Start infinite reading loop
       await syncFiles();
 
       return true;
@@ -168,6 +171,14 @@ export const useFlipperStore = defineStore('flipper', () => {
     if (line.toLowerCase().startsWith('loader is locked')) {
       generalError.value = line.trim();
       setTimeout(() => generalError.value = null, 50);
+    }
+
+    if (line.toLowerCase().startsWith('hardware_name')) {
+      hardwareName.value = line.split(':').pop().trim();
+    }
+
+    if (line.toLowerCase().startsWith('hardware_model')) {
+      hardwareModel.value = line.split(':').pop().trim();
     }
   }
 
@@ -281,6 +292,8 @@ export const useFlipperStore = defineStore('flipper', () => {
     fileByHash,
     isProcessingFiles,
     isProcessingDirectories,
+    hardwareName,
+    hardwareModel,
     getFileColor,
     getFileIcon,
     connect,

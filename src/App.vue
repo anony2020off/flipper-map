@@ -41,6 +41,19 @@ watch(() => flipper.connectionError, (error) => {
   }
 });
 
+watch(() => flipper.isConnected, (isConnected) => {
+  if (isConnected) {
+    Toastify({
+      text: `Connected to ${flipper.hardwareModel ?? 'device'}: ${flipper.hardwareName ?? 'Unknown'}`,
+      duration: 8000,
+      close: true,
+      gravity: "bottom",
+      position: "center",
+      backgroundColor: "#28a745",
+    }).showToast();
+  }
+});
+
 const pins = computed(() => {
   const {latitude, longitude} = location.userLocation || {};
 
