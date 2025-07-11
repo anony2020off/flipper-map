@@ -26,7 +26,7 @@ const map = ref(null);
 const clusters = ref(null);
 const markers = ref({});
 const userMarker = ref(null);
-const defaultZoom = 15;
+const defaultZoom = 17;
 
 const location = useLocationStore()
 const flipper = useFlipperStore()

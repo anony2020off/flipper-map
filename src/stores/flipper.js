@@ -215,10 +215,22 @@ export const useFlipperStore = defineStore('flipper', () => {
       }
       
       isConnected.value = false;
+      isConnecting.value = false;
+      isSyncing.value = false;
     } catch (error) {
       console.error("Error disconnecting from Flipper:", error);
     }
   };
+
+  const launchFile = async (file) => {
+    if (!writer.value || !isConnected.value) return;
+
+    console.log(`Launchung ${file.type} file: ${file.path}`);
+    
+    // Works ONLY without quotes: https://github.com/flipperdevices/flipperzero-firmware/issues/4248
+    await writer.value.write(`loader open ${file.type} ${file.path}\r\n`);
+    await new Promise(resolve => setTimeout(resolve, 500));
+  }
 
   const getFileColor = (type) => {
     switch (type) {
@@ -261,6 +273,7 @@ export const useFlipperStore = defineStore('flipper', () => {
     getFileIcon,
     connect,
     disconnect,
-    syncFiles
+    syncFiles,
+    launchFile
   };
 });
