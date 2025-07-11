@@ -137,11 +137,11 @@ const createMarker = file => {
     icon: L.divIcon({
       className: 'custom-map-marker',
       html: `<div style="background-color: ${color}"><i class="fas fa-${icon}"></i></div>`,
-      iconSize: [20, 20],
-      iconAnchor: [10, 10],
-      popupAnchor: [0, -10],
+      iconSize: [28, 28],
+      iconAnchor: [14, 14],
+      popupAnchor: [0, -14],
     }),
-  }).bindTooltip(file.name, {opacity: .9});
+  });
 }
 
 const addMarkers = () => {
@@ -178,10 +178,25 @@ onUnmounted(() => {
 }
 
 :deep(.custom-map-marker > div) {
-  display: block;
+  transition: .1s ease transform;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   height: 100%;
   width: 100%;
+  text-align: center;
+  color: #fff;
+  border: 2px solid #fff;
   border-radius: 50%;
+  box-sizing: border-box;
+}
+
+:deep(.custom-map-marker > div i) {
+  font-size: 12px;
+}
+
+:deep(.custom-map-marker:hover > div) {
+  transform: scale(1.25);
 }
 
 :deep(.pulse) {
