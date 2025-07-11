@@ -227,7 +227,7 @@ const createMarker = file => {
       </details>
       <div class="mt-2">
         <button class="btn btn-sm btn-secondary w-100 d-flex align-items-center" onclick="jsLaunchFile('${file.hash}')" title="Flipper must be unlocked and apps should not be running">
-          <span class="flex-grow-1 ps-3">Launch on Flipper</span>
+          <span class="flex-grow-1 ps-3">Open on Flipper</span>
           <i class="fas fa-square-arrow-up-right pull-right"></i></button>
       </div>
     </div>`, {
