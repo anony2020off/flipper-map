@@ -27,7 +27,9 @@
     <div class="sidebar-content overflow-auto h-100">
       <div class="flex-grow-1 overflow-auto">
         <div v-if="pins.length === 0" class="d-flex flex-column align-items-center justify-content-center py-5">
-          <p class="text-muted small">No pins found</p>
+          <p v-if="!flipper.isConnected" class="text-muted small">Connect to Flipper to see pins</p>
+          <p v-else-if="flipper.isSyncing" class="text-muted small">Syncing...</p>
+          <p v-else class="text-muted small">No pins found</p>
         </div>
       
         <div v-else>
