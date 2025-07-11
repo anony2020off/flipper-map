@@ -224,13 +224,13 @@ const createMarker = file => {
       <details>
         <summary><strong>File content</strong></summary>
         <pre class="mt-2 card p-2 bg-body-secondary" style="max-height: 210px">${cleanContent}</pre>
-      </details>`
-      + (file.type === 'subghz' ? `<div class="mt-2">
+      </details>
+      <div class="mt-2">
         <button class="btn btn-sm btn-secondary w-100 d-flex align-items-center" onclick="jsLaunchFile('${file.hash}')" title="Flipper must be unlocked and apps should not be running">
           <span class="flex-grow-1 ps-3">Launch on Flipper</span>
           <i class="fas fa-square-arrow-up-right pull-right"></i></button>
-      </div>` : '')
-    + '</div>', {
+      </div>
+    </div>`, {
     closeButton: false,
     autoPanPadding: [60, 20]
   })

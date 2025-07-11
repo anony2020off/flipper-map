@@ -246,10 +246,12 @@ export const useFlipperStore = defineStore('flipper', () => {
   const launchFile = async (file) => {
     if (!writer.value || !isConnected.value) return;
 
-    console.log(`Launchung ${file.type} file: ${file.path}`);
+    const app = {subghz: 'Sub-GHz', nfc: 'NFC', rfid: '"125 kHz RFID"'}[file.type]; // lowercase names like nfc or lfrfid does not work for some reason, subghz works.
+
+    console.log(`Launchung ${app} file: ${file.path}`);
     
     // Works ONLY without quotes: https://github.com/flipperdevices/flipperzero-firmware/issues/4248
-    await writer.value.write(`loader open ${file.type} ${file.path}\r\n`);
+    await writer.value.write(`loader open ${app} ${file.path}\r\n`);
     await new Promise(resolve => setTimeout(resolve, 500));
   }
 
