@@ -177,6 +177,8 @@ const createMarker = file => {
 
   const cleanContent = file.content.replace(/^(>|size:).*$/gmi, '').trim();
   const key = file.key.replace(/00\s/g, '');
+  const frequency = file.content.match(/frequency:\s*(\d+)/i)?.[1];
+  const uid = file.content.match(/uid:\s*(.+)/i)?.[1];
 
   let distanceText = '';
   if (file.distance !== undefined && file.distance !== null) {
@@ -210,7 +212,9 @@ const createMarker = file => {
       </div>
       <div>
         <div class="mb-1"><strong>Type:</strong> ${file.type}</div>
+        ${frequency ? `<div class="mb-1"><strong>Frequency:</strong> ${frequency/1000000} MHz</div>` : ''}
         ${key ? `<div class="mb-1"><strong>Key:</strong> ${key}</div>` : ''}
+        ${uid ? `<div class="mb-1"><strong>UID:</strong> ${uid}</div>` : ''}
         <div class="mb-1"><strong>Distance:</strong> ${distanceText}</div>
         <div class="mb-1"><strong>Path:</strong> ${file.path}</div>
       </div>
@@ -225,10 +229,6 @@ const createMarker = file => {
       </div>` : '')
     + '</div>'
   )
-  // .bindTooltip(file.name, {
-  //   offset: [0, -20],
-  //   direction: 'top'
-  // })
 }
 
 const addMarkers = () => {
