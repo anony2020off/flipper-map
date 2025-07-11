@@ -1,5 +1,5 @@
 <template>
-  <div class="sidebar">
+  <div class="sidebar border-end">
     <div class="sidebar-header">
       <div class="custom-primary-bg text-white p-3 d-flex justify-content-between align-items-center">
         <div class="d-flex align-items-center gap-2">
@@ -118,8 +118,6 @@ const handleSearch = () => {
 .sidebar {
   height: 100%;
   width: 100%;
-  background-color: #f8f9fa;
-  border-right: 1px solid #dee2e6;
 }
 
 .custom-primary-bg {
