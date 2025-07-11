@@ -6,7 +6,7 @@
           <div class="d-flex align-items-center justify-content-center bg-white rounded-circle p-1" style="width: 40px; height: 40px;">
             <i class="fas fa-location-dot custom-primary-text fs-5"></i>
           </div>
-          <h1 class="fs-5 fw-bold mb-0">Flipper Map</h1>
+          <h1 class="fs-5 mb-0 app-title">Flipper Map</h1>
         </div>
         <button @click="handleFlipperConnection" :disabled="flipper.isConnecting" :class="['btn btn-sm d-flex align-items-center gap-1', flipper.isConnected ? 'btn-light' : 'btn-light']">
           <i :class="['fas', flipper.isSyncing ? 'fa-sync fa-spin' : (flipper.isConnected ? 'fa-check' : (flipper.isConnecting ? 'fa-spinner fa-spin' : 'fa-plug'))]"></i>
@@ -108,6 +108,11 @@ const handleSearch = () => {
 </script>
 
 <style scoped>
+.app-title {
+  font-family: 'Jersey 10', sans-serif;
+  font-size: 2rem !important;
+}
+
 .sidebar {
   height: 100%;
   width: 100%;
