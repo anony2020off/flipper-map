@@ -70,7 +70,7 @@ onMounted(async () => {
           onClick: async () => {
             await location.getUserLocation();
             const { latitude, longitude } = location.userLocation;
-            map.value.setView([latitude, longitude], defaultZoom);
+            toRaw(map.value).flyTo([latitude, longitude], defaultZoom);
           },
         },
       ],
