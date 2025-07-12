@@ -56,8 +56,8 @@ onMounted(async () => {
       subdomains: 'abcd',
       maxZoom: 20
     }),
-    'Satellite (Georgia)': L.tileLayer('https://nt0.napr.gov.ge/NGCache?x={x}&y={y}&z={z}&l=ORTHO_GEORGIA_4', {
-      attribution: '&copy; <a href="https://www.napr.gov.ge/en" target="_blank" rel="noopener">NAPR</a> | ' + attribution,
+    'Satellite': L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+      attribution: '&copy; <a href="https://www.esri.com/en-us/arcgis/products/arcgis-online/basemaps" target="_blank" rel="noopener">ESRI</a> | ' + attribution,
       maxZoom: 20
     }),
   };
