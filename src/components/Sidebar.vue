@@ -101,8 +101,8 @@ const handleSelectPin = (pin) => {
                   <i :class="['fas', `fa-${flipper.getFileIcon(pin.type)}`, 'text-white']"></i>
                 </div>
                 <div class="flex-grow-1 min-width-0 mx-3 overflow-hidden" :class="pin.distance ? '' : 'opacity-75'">
-                  <p class="mb-0 fw-medium small text-truncate">{{ pin.name }}</p>
-                  <div class="mb-0 text-muted small d-flex align-items-center text-truncate">
+                  <span class="d-block fw-medium small text-truncate">{{ pin.name }}</span>
+                  <div class="text-muted small d-flex align-items-center text-truncate">
                     <div v-if="pin.distance">
                       <i class="fas fa-location-dot me-1 small flex-shrink-0"></i>
                       <span class="text-truncate">{{ pin.distance < 1 ? `${(pin.distance * 1000).toFixed(0)}m` : (pin.distance < 10 ? `${pin.distance.toFixed(1)}km` : `${pin.distance.toFixed(0)}km`) }} away</span>
