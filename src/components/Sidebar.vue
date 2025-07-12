@@ -84,9 +84,14 @@ const handleSelectPin = (pin) => {
     <div class="sidebar-content overflow-auto h-100">
       <div class="flex-grow-1 overflow-auto">
         <div v-if="pins.length === 0" class="d-flex flex-column align-items-center justify-content-center py-5">
-          <p v-if="!flipper.isConnected" class="text-muted small">Connect to Flipper to see pins</p>
+          <div v-if="!flipper.isConnected">
+            <p class="text-muted small">Connect Flipper to see files.</p>
+            <div class="mt-5 text-center">
+              <a href="#" class="small custom-primary-text text-decoration-none" data-bs-toggle="modal" data-bs-target="#helpModal"><i class="fas fa-info-circle"></i> Help</a>
+            </div>
+          </div>
           <p v-else-if="flipper.isSyncing" class="text-muted small">Syncing...</p>
-          <p v-else class="text-muted small">No pins found</p>
+          <p v-else class="text-muted small">No files found.</p>
         </div>
       
         <div v-else>
@@ -120,6 +125,20 @@ const handleSelectPin = (pin) => {
                 </div>
               </div>
             </a>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal fade" id="helpModal" tabindex="-1" aria-labelledby="helpModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="helpModalLabel"> How to use Flipper Map</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+              <p>...</p>
+            </div>
           </div>
         </div>
       </div>
