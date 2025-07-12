@@ -96,6 +96,13 @@ onMounted(async () => {
         },
       ],
     }).addTo(toRaw(map.value))
+
+    // Update user marker location over time
+    setInterval(async () => {
+      await location.getUserLocation();
+      const { latitude, longitude } = location.userLocation;
+      toRaw(userMarker.value).setLatLng([latitude, longitude]);
+    }, 3000);
   }
 
   let centerWasSet = false;
