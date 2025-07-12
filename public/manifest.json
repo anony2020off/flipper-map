@@ -1,0 +1,21 @@
+{
+  "name": "Flipper Map",
+  "short_name": "Flipper Map",
+  "description": "A map for visualizing Flipper Zero files",
+  "start_url": "/",
+  "display": "standalone",
+  "theme_color": "#ff8200",
+  "background_color": "#ff8200",
+  "icons": [
+    {
+      "src": "/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
