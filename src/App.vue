@@ -84,7 +84,7 @@ const handleSearch = (query) => {
         <Sidebar :pins="pins" @search="handleSearch" :searchQuery="searchQuery" @select-pin="selectPin" v-model:selectedPin="selectedPin"/>
       </div>
       <div class="col map-col">
-        <Map :pins="pins" v-model:selectedPin="selectedPin"/>
+        <Map :pins="pins" @select-pin="selectPin" v-model:selectedPin="selectedPin"/>
       </div>
     </div>
   </div>

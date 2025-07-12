@@ -23,6 +23,8 @@ const props = defineProps({
   }
 });
 
+const emit = defineEmits(['select-pin']);
+
 const map = ref(null);
 const clusters = ref(null);
 const markers = ref({});
@@ -145,6 +147,10 @@ onMounted(async () => {
   map.value.on('baselayerchange', (e) => {
     window.localStorage.setItem('baseLayer', e.name)
   })
+
+  map.value.on('popupclose', () => {
+    emit('select-pin', null);
+  });
 
   L.easyButton({
     position: 'topleft',
