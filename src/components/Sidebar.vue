@@ -48,7 +48,7 @@ const handleSearch = () => {
 };
 
 const handleSelectPin = (pin) => {
-  if (!pin.distance) {
+  if (pin.distance) {
     emit('select-pin', pin);
   }
 }
