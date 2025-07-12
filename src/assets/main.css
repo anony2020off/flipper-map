@@ -97,3 +97,44 @@ body[data-bs-theme="dark"] .leaflet-popup .leaflet-popup-content-wrapper, body[d
         opacity: 0;
     }
 }
+
+.pixel-font {
+    font-family: 'Jersey 10', sans-serif;
+}
+
+.sidebar {
+    height: 100%;
+    width: 100%;
+}
+
+.custom-primary-bg {
+    background-color: #ff8200;
+}
+
+.custom-primary-bg-light {
+    background-color: rgba(255, 130, 0, 0.1);
+}
+
+.custom-primary-text {
+    color: #ff8200;
+}
+
+.custom-primary-border {
+    border-color: rgba(255, 130, 0, 0.25);
+}
+
+.custom-primary-btn {
+    color: #fff;
+    background-color: #ff8200;
+    border-color: #ff8200;
+}
+
+.custom-primary-btn:hover {
+    color: #fff;
+    background-color: #e67600;
+    border-color: #d96e00;
+}
+
+.custom-primary-btn:focus {
+    box-shadow: 0 0 0 0.25rem rgba(255, 130, 0, 0.5);
+}

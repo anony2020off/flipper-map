@@ -1,7 +1,3 @@
-<template>
-  <div id="map" class="map-container"></div>
-</template>
-
 <script setup>
 import { onMounted, onUnmounted, ref, toRaw, watch } from 'vue';
 import Toastify from 'toastify-js';
@@ -289,9 +285,6 @@ onUnmounted(() => {
 });
 </script>
 
-<style scoped>
-.map-container {
-  height: 100%;
-  width: 100%;
-}
-</style>
+<template>
+  <div id="map" class="map-container w-100 h-100"></div>
+</template>

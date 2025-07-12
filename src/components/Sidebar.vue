@@ -1,3 +1,58 @@
+<script setup>
+import { useFlipperStore } from "@/stores/flipper.js";
+import { ref, watch } from "vue";
+import Toastify from 'toastify-js';
+
+const props = defineProps({
+  pins: {
+    type: Array,
+    required: true
+  },
+  searchQuery: {
+    type: String,
+    default: ''
+  },
+  selectedPin: {
+    type: Object,
+    default: null
+  }
+});
+
+const emit = defineEmits(['search', 'select-pin']);
+
+const flipper = useFlipperStore();
+const searchInput = ref(props.searchQuery);
+
+const handleFlipperConnection = async () => {
+  if (flipper.isConnected) {
+    flipper.disconnect();
+  } else {
+    flipper.connect();
+  }
+}
+
+watch(() => flipper.isSyncing, () => {
+  if (!flipper.isSyncing) {
+    Toastify({
+      text: `Discovered ${flipper.fileList.length} files`,
+      duration: 5000,
+      gravity: "bottom",
+      position: "center",
+      backgroundColor: "#28a745",
+    }).showToast();
+  }
+});
+
+const handleSearch = () => {
+  emit('search', searchInput.value);
+};
+
+const handleSelectPin = (pin) => {
+  emit('select-pin', pin);
+}
+
+</script>
+
 <template>
   <div class="sidebar border-end">
     <div class="sidebar-header">
@@ -6,7 +61,7 @@
           <div class="d-flex align-items-center justify-content-center bg-white rounded-circle p-1" style="width: 36px; height: 36px;">
             <i class="fas fa-location-dot custom-primary-text fs-5"></i>
           </div>
-          <h1 class="fs-5 mb-0 app-title">Flipper Map</h1>
+          <h1 class="mb-0 h2 pixel-font">Flipper Map</h1>
         </div>
         <button @click="handleFlipperConnection" :disabled="flipper.isConnecting" :class="['btn btn-sm d-flex align-items-center gap-1', flipper.isConnected ? 'btn-light' : 'btn-light']">
           <i :class="['fas', flipper.isSyncing ? 'fa-sync fa-spin' : (flipper.isConnected ? 'fa-check' : (flipper.isConnecting ? 'fa-spinner fa-spin' : 'fa-plug'))]"></i>
@@ -70,102 +125,3 @@
     </div>
   </div>
 </template>
-
-<script setup>
-import { useFlipperStore } from "@/stores/flipper.js";
-import { ref, watch } from "vue";
-import Toastify from 'toastify-js';
-
-const props = defineProps({
-  pins: {
-    type: Array,
-    required: true
-  },
-  searchQuery: {
-    type: String,
-    default: ''
-  },
-  selectedPin: {
-    type: Object,
-    default: null
-  }
-});
-
-const emit = defineEmits(['search', 'select-pin']);
-
-const flipper = useFlipperStore();
-const searchInput = ref(props.searchQuery);
-
-const handleFlipperConnection = async () => {
-  if (flipper.isConnected) {
-    flipper.disconnect();
-  } else {
-    flipper.connect();
-  }
-}
-
-watch(() => flipper.isSyncing, () => {
-  if (!flipper.isSyncing) {
-    Toastify({
-      text: `Discovered ${flipper.fileList.length} files`,
-      duration: 5000,
-      gravity: "bottom",
-      position: "center",
-      backgroundColor: "#28a745",
-    }).showToast();
-  }
-});
-
-const handleSearch = () => {
-  emit('search', searchInput.value);
-};
-
-const handleSelectPin = (pin) => {
-  emit('select-pin', pin);
-}
-
-</script>
-
-<style scoped>
-.app-title {
-  font-family: 'Jersey 10', sans-serif;
-  font-size: 2rem !important;
-}
-
-.sidebar {
-  height: 100%;
-  width: 100%;
-}
-
-.custom-primary-bg {
-  background-color: #ff8200;
-}
-
-.custom-primary-bg-light {
-  background-color: rgba(255, 130, 0, 0.1);
-}
-
-.custom-primary-text {
-  color: #ff8200;
-}
-
-.custom-primary-border {
-  border-color: rgba(255, 130, 0, 0.25);
-}
-
-.custom-primary-btn {
-  color: #fff;
-  background-color: #ff8200;
-  border-color: #ff8200;
-}
-
-.custom-primary-btn:hover {
-  color: #fff;
-  background-color: #e67600;
-  border-color: #d96e00;
-}
-
-.custom-primary-btn:focus {
-  box-shadow: 0 0 0 0.25rem rgba(255, 130, 0, 0.5);
-}
-</style>
