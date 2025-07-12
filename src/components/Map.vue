@@ -41,35 +41,35 @@ onMounted(async () => {
   const attribution = '<span>Made in ' + flag + ' by <a href="https://stichoza.com">Stichoza</a></span>';
 
   const layers = {
-    'Minimal (Normal)': L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+    'Normal': L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OSM</a> &copy; <a href="https://carto.com/attributions" target="_blank" rel="noopener">CARTO</a> | ' + attribution,
       subdomains: 'abcd',
       maxZoom: 20
     }),
-    'Minimal (Light)': L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+    'Light': L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OSM</a> &copy; <a href="https://carto.com/attributions" target="_blank" rel="noopener">CARTO</a> | ' + attribution,
       subdomains: 'abcd',
       maxZoom: 20
     }),
-    'Minimal (Dark)': L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+    'Dark': L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OSM</a> &copy; <a href="https://carto.com/attributions" target="_blank" rel="noopener">CARTO</a> | ' + attribution,
       subdomains: 'abcd',
       maxZoom: 20
     }),
-    'NAPR Satellite (Georgia)': L.tileLayer('https://nt0.napr.gov.ge/NGCache?x={x}&y={y}&z={z}&l=ORTHO_GEORGIA_4', {
+    'Satellite (Georgia)': L.tileLayer('https://nt0.napr.gov.ge/NGCache?x={x}&y={y}&z={z}&l=ORTHO_GEORGIA_4', {
       attribution: '&copy; <a href="https://www.napr.gov.ge/en" target="_blank" rel="noopener">NAPR</a> | ' + attribution,
       maxZoom: 20
     }),
   };
 
-  const baseLayer = window.localStorage.getItem('baseLayer') ?? 'Minimal (Normal)';
+  const baseLayer = window.localStorage.getItem('baseLayer') ?? 'Normal';
 
   map.value = L.map('map', {
     center: window.localStorage.getItem('center')?.split(',') ?? [25, 0],
     zoom: window.localStorage.getItem('zoom') ?? 2,
     zoomControl: true,
     worldCopyJump: true,
-    layers: layers[baseLayer], // Object.values(layers)
+    layers: layers[baseLayer] ?? layers['Normal'], // In case old naming is stuck in local storage
   });
 
   // Clusters
