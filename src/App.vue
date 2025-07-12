@@ -1,8 +1,8 @@
 <script setup>
-import {computed, onMounted, ref, watch} from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 import Sidebar from './components/Sidebar.vue';
 import Map from './components/Map.vue';
-import {useLocationStore} from './stores/location.js';
+import { useLocationStore } from './stores/location.js';
 import { useFlipperStore } from './stores/flipper';
 import Toastify from 'toastify-js';
 
