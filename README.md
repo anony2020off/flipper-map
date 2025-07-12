@@ -1,6 +1,8 @@
 # Flipper Map
 
-Connect your Flipper Zero to your computer using USB and visualize signal recordings on map [↗ flipper-map.stichoza.com](https://flipper-map.stichoza.com)
+Connect your Flipper Zero to your computer using USB and visualize signal recordings on map.
+
+**[↗ flipper-map.stichoza.com](https://flipper-map.stichoza.com)**
 
 ![Flipper Zero Map](./public/flipper-zero-cover.png)
 
