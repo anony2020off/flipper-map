@@ -2,7 +2,7 @@
 
 Connect your Flipper Zero to your computer using USB and visualize signal recordings on map.
 
-<img width="1024" height="477" alt="flipper-zero-cover" src="https://github.com/user-attachments/assets/8c8c29be-b9b9-435c-ae2a-738060fadba4" />
+![Flipper Zero Map](./public/flipper-zero-cover.png)
 
 
 Flipper files should include `Latitude:` and `Longitude:` lines. It's done manually at the moment, but I hope there will be an easier way to do it in the future, like automatically saving location at the time of recording using GPS module via GPIO.
