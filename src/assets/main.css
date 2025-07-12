@@ -1,3 +1,10 @@
+@import 'toastify-js/src/toastify.css';
+@import 'leaflet/dist/leaflet.css';
+@import 'leaflet/dist/leaflet.css';
+@import 'leaflet.markercluster/dist/MarkerCluster.css';
+@import 'leaflet.markercluster/dist/MarkerCluster.Default.css';
+@import 'leaflet-easybutton/src/easy-button.css';
+
 .toastify {
     font-family: 'Roboto', sans-serif;
     font-size: 14px;

@@ -1,8 +1,12 @@
 <script setup>
 import { onMounted, onUnmounted, ref, toRaw, watch } from 'vue';
-import Toastify from 'toastify-js';
-import { useLocationStore } from "@/stores/location.js";
-import { useFlipperStore } from "@/stores/flipper.js";
+import { useLocationStore } from '@/stores/location.js';
+import { useFlipperStore } from '@/stores/flipper.js';
+import L from 'leaflet';
+import 'leaflet-easybutton';
+import 'leaflet.marker.slideto';
+import 'leaflet.markercluster';
+
 
 const props = defineProps({
   pins: {

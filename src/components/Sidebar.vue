@@ -1,6 +1,6 @@
 <script setup>
-import { useFlipperStore } from "@/stores/flipper.js";
-import { ref, watch } from "vue";
+import { useFlipperStore } from '@/stores/flipper.js';
+import { ref, watch } from 'vue';
 import Toastify from 'toastify-js';
 
 const props = defineProps({
