@@ -196,6 +196,8 @@ const createMarker = file => {
   const protocol = file.content.match(/protocol:\s*(.+)/i)?.[1];
   const bit = file.content.match(/bit:\s*(.+)/i)?.[1];
   const uid = file.content.match(/uid:\s*(.+)/i)?.[1];
+  const keyType = file.content.match(/key type:\s*(.+)/i)?.[1];
+  const data = file.content.match(/data:\s*(.+)/i)?.[1]; // Show only with keyType (RFID), otherwise it will display RAW SubGHz data
   const type = {subghz: 'Sub-GHz', nfc: 'NFC', rfid: 'RFID'}[file.type] ?? file.type;
 
   let distanceText = '';
@@ -233,6 +235,8 @@ const createMarker = file => {
         ${protocol ? `<div class="mb-1"><strong>Protocol:</strong> ${protocol} ${bit ? `(${bit} bit)` : ''}</div>` : ''}
         ${key ? `<div class="mb-1"><strong>Key:</strong> ${key}</div>` : ''}
         ${uid ? `<div class="mb-1"><strong>UID:</strong> ${uid}</div>` : ''}
+        ${keyType ? `<div class="mb-1"><strong>Key Type:</strong> ${keyType}</div>` : ''}
+        ${keyType && data ? `<div class="mb-1"><strong>Data:</strong> ${data}</div>` : ''}
         <div class="mb-1"><strong>Distance:</strong> ${distanceText}</div>
         <div class="mb-1"><strong>Path:</strong> ${file.path}</div>
       </div>
