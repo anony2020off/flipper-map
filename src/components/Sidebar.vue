@@ -87,7 +87,7 @@ const handleSelectPin = (pin) => {
           <div v-if="!flipper.isConnected">
             <p class="text-muted small">Connect Flipper to see files.</p>
             <div class="mt-5 text-center">
-              <a href="#" class="small custom-primary-text text-decoration-none" data-bs-toggle="modal" data-bs-target="#helpModal"><i class="fas fa-info-circle"></i> Help</a>
+              <a href="#" class="small custom-primary-text text-decoration-none" data-bs-toggle="modal" data-bs-target="#helpModal"><i class="fas fa-question-circle"></i> Help</a>
             </div>
           </div>
           <p v-else-if="flipper.isSyncing" class="text-muted small">Syncing...</p>
@@ -130,14 +130,58 @@ const handleSelectPin = (pin) => {
       </div>
 
       <div class="modal fade" id="helpModal" tabindex="-1" aria-labelledby="helpModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
           <div class="modal-content">
             <div class="modal-header">
               <h5 class="modal-title" id="helpModalLabel"> How to use Flipper Map</h5>
               <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body">
-              <p>...</p>
+            <div class="modal-body px-4">
+              <div class="mb-4">
+                <h6 class="fw-wedium"><i class="fas fa-plug me-2"></i>Connecting Your Flipper</h6>
+                <ol>
+                  <li>Connect your Flipper Zero to the computer using USB cable.</li>
+                  <li>Click the <span class="fw-medium">Connect</span> button in the sidebar and select your Flipper Zero device from the browser dialog.</li>
+                  <li>Wait for the app to sync files from your device.</li>
+                </ol>
+                <p>
+                  <span class="fw-medium">Pins</span> on the map represent your Flipper files with location data. Click a pin to view detailed information about the file.
+                  Flipper Map currently supports <i class="fas fa-wave-square" style="color: #1aa179"></i> Sub-GHz, <i class="fas fa-wifi" style="color: #3d8bfd"></i> NFC and <i class="fas fa-id-card-clip" style="color: #ffc107"></i> RFID files.
+                </p>
+              </div>
+              
+              <div class="mb-4">
+                <div class="alert alert-warning">
+                  <i class="fas fa-exclamation-triangle me-1"></i>
+                  <span class="fw-medium">Important!</span>
+                  Files must include <code>Latitude:</code> and <code>Longitude:</code> lines to appear on the map.
+                </div>
+                <ul>
+                  <li>You can add location data by editing files on your SD card or using the Flipper mobile app.</li>
+                  <li>Files without location data will still appear in the sidebar but won't be shown on the map.</li>
+                </ul>
+                <div class="mt-3">
+                  <p class="mb-1"><span class="fw-medium">Example File:</span></p>
+                  <pre class="border rounded bg-body-secondary py-2 px-3 small">
+Filetype: Flipper SubGhz Key File
+Version: 1
+Frequency: 433920000
+Preset: FuriHalSubGhzPresetOok270Async
+<strong class="text-success">Latitude: 41.123456</strong>
+<strong class="text-success">Longitude: 44.987654</strong>
+Protocol: Dickert_MAHS
+Bit: 36
+Key: 00 00 00 0C 12 AB CD EF</pre>
+                </div>
+              </div>
+              
+              <div class="mb-4">
+                <h6 class="fw-bold"><i class="fas fa-square-arrow-up-right me-2"></i>Opening Files on Flipper</h6>
+                <ol>
+                  <li>Click on a pin to open its popup.</li>
+                  <li>Click the <span class="fw-medium">Open on Flipper</span> button to launch the file on your connected device.</li>
+                </ol>
+              </div>
             </div>
           </div>
         </div>
