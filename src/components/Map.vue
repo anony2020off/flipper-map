@@ -58,7 +58,7 @@ onMounted(async () => {
     }),
     'Satellite': L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
       attribution: '&copy; <a href="https://www.esri.com/en-us/arcgis/products/arcgis-online/basemaps" target="_blank" rel="noopener">ESRI</a> | ' + attribution,
-      maxZoom: 20
+      maxZoom: 19
     }),
   };
 
@@ -99,9 +99,13 @@ onMounted(async () => {
 
     // Update user marker location over time
     setInterval(async () => {
-      await location.getUserLocation();
-      const { latitude, longitude } = location.userLocation;
-      toRaw(userMarker.value).setLatLng([latitude, longitude]);
+      try {
+        await location.getUserLocation();
+        const { latitude, longitude } = location.userLocation;
+        toRaw(userMarker.value).slideTo([latitude, longitude], {duration: 3000});
+      } catch (error) {
+        console.error('Error getting user location update');
+      }
     }, 3000);
   }
 
