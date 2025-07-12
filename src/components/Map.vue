@@ -31,15 +31,15 @@ const location = useLocationStore()
 const flipper = useFlipperStore()
 
 onMounted(async () => {
-
+  
   const flag = `
     <svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-ge" viewBox="0 0 640 480" width="12" height="8" class="leaflet-attribution-flag">
       <path fill="#fff" d="M0 0h640v480H0z"/><path fill="red" d="M272 0h96v480h-96z"/><path fill="red" d="M0 192h640v96H0z"/>
       <path fill="red" fill-rule="evenodd" d="M146.8 373.1c1-16.8 4-31.1 4-31.1s-9.8 1-14.8 1-14.8-1-14.8-1 3 14.3 4 31.2c-16.9-1-31.2-4-31.2-4s1 7.4 1 14.8-1 14.8-1 14.8 14.3-3 31.2-4c-1 16.9-4 31.2-4 31.2s7.4-1 14.8-1 14.8 1 14.8 1-3-14.3-4-31.2c16.9 1 31.2 4 31.2 4s-1-9.8-1-14.8 1-14.8 1-14.8-14.3 3-31.1 4zm368-288c1-16.8 4-31.1 4-31.1s-9.8 1-14.8 1-14.8-1-14.8-1 3 14.3 4 31.1c-16.9-1-31.2-3.9-31.2-3.9s1 7.4 1 14.8-1 14.8-1 14.8 14.3-3 31.2-4c-1 16.9-4 31.2-4 31.2s7.4-1 14.8-1 14.8 1 14.8 1-3-14.3-4-31.1c16.9 1 31.2 4 31.2 4s-1-10-1-14.9 1-14.8 1-14.8-14.3 3-31.2 4zm-368 0c1-16.8 4-31.1 4-31.1s-9.8 1-14.8 1-14.8-1-14.8-1 3 14.3 4 31.2c-16.9-1-31.2-4-31.2-4s1 7.4 1 14.8-1 14.8-1 14.8 14.3-3 31.2-4c-1 16.9-4 31.2-4 31.2s7.4-1 14.8-1 14.8 1 14.8 1-3-14.3-4-31.1c16.9 1 31.2 4 31.2 4s-1-9.8-1-14.8 1-14.8 1-14.8-14.3 3-31.1 4zm368 288c1-16.8 4-31.1 4-31.1s-9.8 1-14.8 1-14.8-1-14.8-1 3 14.3 4 31.2c-16.9-1-31.2-4-31.2-4s1 7.4 1 14.8-1 14.8-1 14.8 14.3-3 31.2-4c-1 16.9-4 31.2-4 31.2s7.4-1 14.8-1 14.8 1 14.8 1-3-14.3-4-31.2c16.9 1 31.2 4 31.2 4s-1-9.8-1-14.8 1-14.8 1-14.8-14.3 3-31.2 4z"/>
     </svg>`;
-
+  
   const attribution = '<span>Made in ' + flag + ' by <a href="https://stichoza.com">Stichoza</a></span>';
-
+  
   const layers = {
     'Normal': L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OSM</a> &copy; <a href="https://carto.com/attributions" target="_blank" rel="noopener">CARTO</a> | ' + attribution,
@@ -61,9 +61,9 @@ onMounted(async () => {
       maxZoom: 19
     }),
   };
-
+  
   const baseLayer = window.localStorage.getItem('baseLayer') ?? 'Normal';
-
+  
   map.value = L.map('map', {
     center: window.localStorage.getItem('center')?.split(',') ?? [25, 0],
     zoom: window.localStorage.getItem('zoom') ?? 2,
@@ -71,32 +71,63 @@ onMounted(async () => {
     worldCopyJump: true,
     layers: layers[baseLayer] ?? layers['Normal'], // In case old naming is stuck in local storage
   });
-
+  
   // Clusters
   clusters.value = L.markerClusterGroup({
     maxClusterRadius: zoom => zoom < 3 ? 40 : 30,
     animateAddingMarkers: true,
     disableClusteringAtZoom: 17
   }).addTo(toRaw(map.value));
-
-  // Move to current location
+  
+  let centerWasSet = false;
+  
+  // Center map to last known coordinates and zoom level
+  if (window.localStorage.getItem('center')) {
+    centerWasSet = true;
+    map.value.setView(
+    window.localStorage.getItem('center')?.split(',') ?? [25, 0],
+    window.localStorage.getItem('zoom') ?? defaultZoom
+    );
+  }
+  
+  // Set user location marker
   if (location.geolocationSupported()) {
+    
     L.easyButton({
       position: 'topleft',
       states: [
-        {
-          stateName: 'geolocation-button',
-          title: 'Center map to current location',
-          icon: 'fa-location-crosshairs fa-lg',
-          onClick: async () => {
-            await location.getUserLocation();
-            const { latitude, longitude } = location.userLocation;
-            toRaw(map.value).flyTo([latitude, longitude], defaultZoom);
-          },
+      {
+        stateName: 'geolocation-button',
+        title: 'Center map to current location',
+        icon: 'fa-location-crosshairs fa-lg',
+        onClick: async () => {
+          await location.getUserLocation();
+          const { latitude, longitude } = location.userLocation;
+          toRaw(map.value).flyTo([latitude, longitude], Math.max(defaultZoom, map.value.getZoom()));
         },
+      },
       ],
     }).addTo(toRaw(map.value))
-
+    
+    await location.getUserLocation();
+    const { latitude, longitude } = location.userLocation;
+    
+    if (!centerWasSet) {
+      map.value.setView([latitude, longitude], defaultZoom);
+    }
+    
+    const pulsingIcon = L.divIcon({
+      className: 'user-location-marker',
+      html: '<div class="pulse"></div>',
+      iconSize: [20, 20],
+      iconAnchor: [10, 10],
+      tooltipAnchor: [0, -12],
+    });
+    
+    userMarker.value = L.marker([latitude, longitude], { icon: pulsingIcon })
+    .addTo(toRaw(map.value))
+    .bindTooltip('Your Location', { direction: 'top' });
+    
     // Update user marker location over time
     setInterval(async () => {
       try {
@@ -108,79 +139,46 @@ onMounted(async () => {
       }
     }, 3000);
   }
-
-  let centerWasSet = false;
-
-  // Center map to last known coordinates and zoom level
-  if (window.localStorage.getItem('center')) {
-    centerWasSet = true;
-    map.value.setView(
-      window.localStorage.getItem('center')?.split(',') ?? [25, 0],
-      window.localStorage.getItem('zoom') ?? defaultZoom
-    );
-  }
-
-  // Set user location marker
-  if (location.geolocationSupported()) {
-
-    await location.getUserLocation();
-    const { latitude, longitude } = location.userLocation;
-
-    if (!centerWasSet) {
-      map.value.setView([latitude, longitude], defaultZoom);
-    }
-
-    const pulsingIcon = L.divIcon({
-      className: 'user-location-marker',
-      html: '<div class="pulse"></div>',
-      iconSize: [20, 20],
-      iconAnchor: [10, 10]
-    });
-
-    userMarker.value = L.marker([latitude, longitude], { icon: pulsingIcon })
-      .addTo(toRaw(map.value))
-      .bindTooltip('Your Location', {opacity: .9});
-  }
-
+  
   // Save center locally
   map.value.on('moveend', () => {
     const center = map.value.getCenter()
     window.localStorage.setItem('center', [center.lat, center.lng].join(','))
   })
-
+  
   // Save zoom level locally
   map.value.on('zoomend', () => {
     window.localStorage.setItem('zoom', map.value.getZoom())
   })
-
+  
   map.value.on('baselayerchange', (e) => {
     window.localStorage.setItem('baseLayer', e.name);
     document.body.setAttribute('data-bs-theme', e.name.toLowerCase().includes('dark') ? 'dark' : 'light');
   })
-
+  
   // Initial selection
   document.body.setAttribute('data-bs-theme', baseLayer.toLowerCase().includes('dark') ? 'dark' : 'light');
-
+  
   map.value.on('popupclose', () => {
     emit('select-pin', null);
   });
-
-  L.easyButton({
-    position: 'topleft',
-    states: [
-      {
-        stateName: 'clustering-button',
-        title: 'Toggle clustering',
-        icon: 'fa-circle-nodes fa-lg',
-        onClick: async () => {
-          // TODO: Toggle clustering
-        },
-      },
-    ],
-  }).addTo(toRaw(map.value))
-
+  
+  // L.easyButton({
+  //   position: 'topleft',
+  //   states: [
+  //   {
+  //     stateName: 'clustering-button',
+  //     title: 'Toggle clustering',
+  //     icon: 'fa-circle-nodes fa-lg',
+  //     onClick: async () => {
+  //       // TODO: Toggle clustering
+  //     },
+  //   },
+  //   ],
+  // }).addTo(toRaw(map.value))
+  
   L.control.layers(layers).addTo(toRaw(map.value));
-
+  
   watch(() => props.selectedPin, () => {
     if (props.selectedPin) {
       toRaw(map.value).flyTo([props.selectedPin.latitude, props.selectedPin.longitude], defaultZoom, {duration: 0.5}); // Limit duration to make sure popup is able to open
@@ -189,7 +187,7 @@ onMounted(async () => {
       }, 1000);
     }
   });
-
+  
 });
 
 const clearMarkers = () => {
@@ -202,7 +200,7 @@ const clearMarkers = () => {
 const createMarker = file => {
   const color = flipper.getFileColor(file.type);
   const icon = flipper.getFileIcon(file.type);
-
+  
   const cleanContent = file.content.replace(/^(>|size:).*$/gmi, '').trim();
   const key = file.key.replace(/00\s/g, '');
   const frequency = file.content.match(/frequency:\s*(\d+)/i)?.[1];
@@ -212,7 +210,7 @@ const createMarker = file => {
   const keyType = file.content.match(/key type:\s*(.+)/i)?.[1];
   const data = file.content.match(/data:\s*(.+)/i)?.[1]; // Show only with keyType (RFID), otherwise it will display RAW SubGHz data
   const type = {subghz: 'Sub-GHz', nfc: 'NFC', rfid: 'RFID'}[file.type] ?? file.type;
-
+  
   let distanceText = '';
   if (file.distance !== undefined && file.distance !== null) {
     if (file.distance < 1) {
@@ -223,7 +221,7 @@ const createMarker = file => {
       distanceText = `${file.distance.toFixed(0)}km`;
     }
   }
-
+  
   return L.marker([file.latitude, file.longitude], {
     title: file.name,
     riseOnHover: true,
@@ -270,7 +268,7 @@ const createMarker = file => {
 
 const addMarkers = () => {
   const existingPins = Object.keys(markers.value);
-
+  
   props.pins.forEach(file => {
     if (!existingPins.includes(file.hash) && file.latitude && file.longitude) {
       markers.value[file.hash] = createMarker(file).addTo(toRaw(clusters.value));
