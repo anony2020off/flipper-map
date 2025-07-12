@@ -48,7 +48,9 @@ const handleSearch = () => {
 };
 
 const handleSelectPin = (pin) => {
-  emit('select-pin', pin);
+  if (!pin.distance) {
+    emit('select-pin', pin);
+  }
 }
 
 </script>
@@ -114,7 +116,7 @@ const handleSelectPin = (pin) => {
                   </div>
                 </div>
                 <div class="flex-shrink-0">
-                  <i class="fas fa-chevron-right text-muted"></i>
+                  <i v-if="pin.distance" class="fas fa-chevron-right text-muted"></i>
                 </div>
               </div>
             </a>
