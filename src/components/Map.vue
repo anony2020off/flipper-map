@@ -66,12 +66,14 @@ onMounted(async () => {
     }),
   };
 
+  const baseLayer = window.localStorage.getItem('baseLayer') ?? 'Minimal (Normal)';
+
   map.value = L.map('map', {
     center: window.localStorage.getItem('center')?.split(',') ?? [25, 0],
     zoom: window.localStorage.getItem('zoom') ?? 2,
     zoomControl: true,
     worldCopyJump: true,
-    layers: layers[window.localStorage.getItem('baseLayer') ?? 'Minimal (Normal)'], // Object.values(layers)
+    layers: layers[baseLayer], // Object.values(layers)
   });
 
   // Clusters
@@ -145,8 +147,12 @@ onMounted(async () => {
   })
 
   map.value.on('baselayerchange', (e) => {
-    window.localStorage.setItem('baseLayer', e.name)
+    window.localStorage.setItem('baseLayer', e.name);
+    document.body.setAttribute('data-bs-theme', e.name.toLowerCase().includes('dark') ? 'dark' : 'light');
   })
+
+  // Initial selection
+  document.body.setAttribute('data-bs-theme', baseLayer.toLowerCase().includes('dark') ? 'dark' : 'light');
 
   map.value.on('popupclose', () => {
     emit('select-pin', null);
@@ -287,87 +293,5 @@ onUnmounted(() => {
 .map-container {
   height: 100%;
   width: 100%;
-}
-
-:deep(.custom-popup) {
-  width: 280px;
-  font-family: Roboto, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif !important;
-}
-
-:deep(.user-location-marker) {
-  background: transparent;
-}
-
-:deep(.custom-map-marker > div) {
-  transition: .1s ease transform;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100%;
-  width: 100%;
-  text-align: center;
-  color: #fff;
-  border: 2px solid #fff;
-  border-radius: 50%;
-  box-sizing: border-box;
-  cursor: pointer;
-}
-
-:deep(.custom-map-marker > div i) {
-  font-size: 12px;
-}
-
-:deep(.custom-map-marker:hover > div) {
-  transform: scale(1.25);
-}
-
-:deep(.pulse) {
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  background-color: rgba(38, 143, 255, 0.7);
-  position: relative;
-  animation: pulse 1.5s infinite;
-}
-
-:deep(.pulse)::after {
-  content: '';
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  top: 0;
-  left: 0;
-  background-color: rgba(38, 143, 255, 0.3);
-  border-radius: 50%;
-  z-index: -1;
-  animation: pulse-outer 1.5s infinite;
-}
-
-@keyframes pulse {
-  0% {
-    transform: scale(0.8);
-  }
-  70% {
-    transform: scale(1);
-    box-shadow: 0 0 0 10px rgba(38, 143, 255, 0);
-  }
-  100% {
-    transform: scale(0.8);
-  }
-}
-
-@keyframes pulse-outer {
-  0% {
-    transform: scale(1);
-    opacity: 1;
-  }
-  70% {
-    transform: scale(2);
-    opacity: 0;
-  }
-  100% {
-    transform: scale(1);
-    opacity: 0;
-  }
 }
 </style>
