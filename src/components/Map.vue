@@ -162,6 +162,15 @@ onMounted(async () => {
 
   L.control.layers(layers).addTo(toRaw(map.value));
 
+  watch(() => props.selectedPin, () => {
+    if (props.selectedPin) {
+      toRaw(map.value).flyTo([props.selectedPin.latitude, props.selectedPin.longitude], defaultZoom, {duration: 0.5}); // Limit duration to make sure popup is able to open
+      setTimeout(() => {
+        markers.value[props.selectedPin.hash].openPopup();
+      }, 1000);
+    }
+  });
+
 });
 
 const clearMarkers = () => {

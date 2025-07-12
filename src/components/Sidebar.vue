@@ -39,7 +39,7 @@
               :key="pin.hash"
               class="list-group-item list-group-item-action px-3 py-3 overflow-hidden"
               :class="{'bg-body-secondary': selectedPin && selectedPin.hash === pin.hash, 'd-none': !pin.visible}"
-              @click.prevent="selectPin(pin)"
+              @click.prevent="handleSelectPin(pin)"
             >
               <div class="d-flex align-items-center">
                 <div class="d-flex align-items-center justify-content-center rounded-circle shadow-sm flex-shrink-0" style="width: 46px; height: 46px" :style="{ backgroundColor: flipper.getFileColor(pin.type) }">
@@ -119,6 +119,10 @@ watch(() => flipper.isSyncing, () => {
 const handleSearch = () => {
   emit('search', searchInput.value);
 };
+
+const handleSelectPin = (pin) => {
+  emit('select-pin', pin);
+}
 
 </script>
 
