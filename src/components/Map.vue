@@ -166,7 +166,7 @@ onMounted(async () => {
     if (props.selectedPin) {
       toRaw(map.value).flyTo([props.selectedPin.latitude, props.selectedPin.longitude], defaultZoom, {duration: 0.5}); // Limit duration to make sure popup is able to open
       setTimeout(() => {
-        markers.value[props.selectedPin.hash].openPopup();
+        toRaw(markers.value[props.selectedPin.hash]).openPopup();
       }, 1000);
     }
   });
