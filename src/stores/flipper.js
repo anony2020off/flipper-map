@@ -251,6 +251,8 @@ export const useFlipperStore = defineStore('flipper', () => {
     console.log(`Launchung ${app} file: ${file.path}`);
     
     // Works ONLY without quotes: https://github.com/flipperdevices/flipperzero-firmware/issues/4248
+    await writer.value.write(`loader close\r\n`);
+    await new Promise(resolve => setTimeout(resolve, 100));
     await writer.value.write(`loader open ${app} ${file.path}\r\n`);
     await new Promise(resolve => setTimeout(resolve, 500));
   }
