@@ -123,7 +123,7 @@ export const useFlipperStore = defineStore('flipper', () => {
           key: '',
         };
         await writer.value.write(`storage read "${file.replace(/\/\/+/g, '/')}"\r\n`);
-        await new Promise(resolve => setTimeout(resolve, 500));
+        await new Promise(resolve => setTimeout(resolve, 200));
 
         fileList.value.push(currentFile.value);
       }
