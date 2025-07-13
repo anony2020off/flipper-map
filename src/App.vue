@@ -4,7 +4,7 @@ import Sidebar from './components/Sidebar.vue';
 import Map from './components/Map.vue';
 import { useLocationStore } from './stores/location.js';
 import { useFlipperStore } from './stores/flipper';
-import Toastify from 'toastify-js';
+import { notify } from '@/helpers/notification.js';
 
 const location = useLocationStore();
 const flipper = useFlipperStore();
@@ -17,40 +17,19 @@ onMounted(async () => {
 
 watch(() => flipper.generalError, (error) => {
   if (error) {
-    Toastify({
-      text: error,
-      duration: 5000,
-      close: true,
-      gravity: "bottom",
-      position: "center",
-      backgroundColor: "#dc3545",
-    }).showToast();
+    notify(error, 'error');
   }
 });
 
 watch(() => flipper.connectionError, (error) => {
   if (error) {
-    Toastify({
-      text: error,
-      duration: 8000,
-      close: true,
-      gravity: "bottom",
-      position: "center",
-      backgroundColor: "#dc3545",
-    }).showToast();
+    notify(error, 'error');
   }
 });
 
 watch(() => flipper.isConnected, (isConnected) => {
   if (isConnected) {
-    Toastify({
-      text: `Connected to ${flipper.hardwareModel ?? 'device'}: ${flipper.hardwareName ?? 'Unknown'}`,
-      duration: 8000,
-      close: true,
-      gravity: "bottom",
-      position: "center",
-      backgroundColor: "#28a745",
-    }).showToast();
+    notify(`Connected to ${flipper.hardwareModel ?? 'device'}: ${flipper.hardwareName ?? 'Unknown'}`, 'success');
   }
 });
 
