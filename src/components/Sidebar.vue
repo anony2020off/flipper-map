@@ -167,8 +167,8 @@ Filetype: Flipper SubGhz Key File
 Version: 1
 Frequency: 433920000
 Preset: FuriHalSubGhzPresetOok270Async
-<strong class="text-success">Latitude: 41.123456</strong>
-<strong class="text-success">Longitude: 44.987654</strong>
+<strong class="text-success">Latitude: 41.123456789</strong>
+<strong class="text-success">Longitude: 44.987654321</strong>
 Protocol: Dickert_MAHS
 Bit: 36
 Key: 00 00 00 0C 12 AB CD EF</pre>
