@@ -212,6 +212,7 @@ const createMarker = file => {
   const keyType = file.content.match(/key type:\s*(.+)/i)?.[1];
   const data = file.content.match(/data:\s*(.+)/i)?.[1]; // Show only with keyType (RFID), otherwise it will display RAW SubGHz data
   const type = {subghz: 'Sub-GHz', nfc: 'NFC', rfid: 'RFID'}[file.type] ?? file.type;
+  const isUnknown = file.name.startsWith('_') || file.name.startsWith('UNK '); // For my personal use case ¯\_(ツ)_/¯
   
   let distanceText = '';
   if (file.distance !== undefined && file.distance !== null) {
@@ -229,7 +230,7 @@ const createMarker = file => {
     riseOnHover: true,
     icon: L.divIcon({
       className: 'custom-map-marker',
-      html: `<div class="bg-${file.type}"><i class="fas fa-${icon}"></i></div>`,
+      html: `<div class="bg-${file.type}${isUnknown ? ' opacity-75' : ''}"><i class="fas fa-${icon}"></i></div>`,
       iconSize: [28, 28],
       iconAnchor: [14, 14],
       popupAnchor: [0, -14],
