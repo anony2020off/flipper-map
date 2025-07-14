@@ -2,6 +2,7 @@
 import { onMounted, onUnmounted, ref, toRaw, watch } from 'vue';
 import { useLocationStore } from '@/stores/location.js';
 import { useFlipperStore } from '@/stores/flipper.js';
+import { notify } from '@/helpers/notification';
 import L from 'leaflet';
 import 'leaflet-easybutton';
 import 'leaflet.marker.slideto';
@@ -281,8 +282,14 @@ const addMarkers = () => {
 }
 
 window.jsLaunchFile = (hash) => {
-  const file = flipper.fileByHash(hash);
-  flipper.launchFile(file);
+  if (flipper.isSyncing) {
+    notify('Please wait until sync is complete', 'warning');
+  } else if (!flipper.isConnected) {
+    notify('Please connect your Flipper', 'error');
+  } else {
+    const file = flipper.fileByHash(hash);
+    flipper.launchFile(file);
+  }
 }
 
 watch(() => props.pins, () => {
