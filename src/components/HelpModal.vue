@@ -39,8 +39,6 @@
               <span class="fw-medium">Pins</span> on the map represent your Flipper files with location data. Click a pin to view detailed information about the file.
               Flipper Map currently supports <i class="fas fa-wave-square color-subghz" /> Sub-GHz, <i class="fas fa-wifi color-nfc" /> NFC and <i class="fas fa-id-card-clip color-rfid" /> RFID files.
             </p>
-          </div>
-          <div class="mb-4">
             <ul>
               <li>Files must include <code>Latitude:</code> and <code>Longitude:</code> lines to appear on the map.</li>
               <li>You can add location data by editing files on your SD card or using the Flipper mobile app.</li>
