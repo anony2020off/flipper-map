@@ -52,10 +52,10 @@ const handleSelectPin = (pin) => {
 <template>
   <div class="sidebar border-end">
     <div class="sidebar-header">
-      <div class="custom-primary-bg text-white p-3 d-flex justify-content-between align-items-center">
+      <div class="bg-primary text-white p-3 d-flex justify-content-between align-items-center">
         <div class="d-flex align-items-center gap-2">
           <div class="d-flex align-items-center justify-content-center bg-white rounded-circle p-1 size-36">
-            <i class="fas fa-location-dot custom-primary-text fs-5" />
+            <i class="fas fa-location-dot text-primary fs-5" />
           </div>
           <h1 class="mb-0 h2 pixel-font">
             Flipper Map
@@ -100,7 +100,7 @@ const handleSelectPin = (pin) => {
             <div class="mt-5 text-center">
               <a
                 href="#"
-                class="small custom-primary-text text-decoration-none"
+                class="btn btn-sm btn-link text-decoration-none"
                 data-bs-toggle="modal"
                 data-bs-target="#helpModal"
               >
@@ -189,25 +189,32 @@ const handleSelectPin = (pin) => {
                   <li>Click the <span class="fw-medium">Connect</span> button in the sidebar and select your Flipper Zero device from the browser dialog.</li>
                   <li>Wait for the app to sync files from your device.</li>
                 </ol>
+                <div class="alert alert-success">
+                  <i class="fas fa-lock me-1" />
+                  Your files are never sent to any server and always remain private.
+                  <a
+                    href="https://github.com/Stichoza/flipper-map"
+                    class="link-success"
+                  >View source on GitHub</a>.
+                </div>
                 <p>
                   <span class="fw-medium">Pins</span> on the map represent your Flipper files with location data. Click a pin to view detailed information about the file.
                   Flipper Map currently supports <i class="fas fa-wave-square color-subghz" /> Sub-GHz, <i class="fas fa-wifi color-nfc" /> NFC and <i class="fas fa-id-card-clip color-rfid" /> RFID files.
                 </p>
               </div>
               <div class="mb-4">
-                <div class="alert alert-warning">
-                  <i class="fas fa-exclamation-triangle me-1" />
-                  Files must include <code>Latitude:</code> and <code>Longitude:</code> lines to appear on the map.
-                </div>
                 <ul>
+                  <li>Files must include <code>Latitude:</code> and <code>Longitude:</code> lines to appear on the map.</li>
                   <li>You can add location data by editing files on your SD card or using the Flipper mobile app.</li>
                   <li>Files without location data will still appear in the sidebar but won't be shown on the map.</li>
                 </ul>
-                <div class="mt-3">
-                  <p class="mb-1">
-                    <span class="fw-medium">Example File:</span>
-                  </p>
-                  <pre class="border rounded bg-body-secondary py-2 px-3 small">
+              </div>
+              <div class="mb-4">
+                <h6 class="fw-bold">
+                  <i class="fas fa-file-text me-2" />
+                  <span>Example File</span>
+                </h6>
+                <pre class="border rounded bg-body-secondary py-2 px-3 small">
 Filetype: Flipper SubGhz Key File
 Version: 1
 Frequency: 433920000
@@ -216,7 +223,6 @@ Preset: FuriHalSubGhzPresetOok270Async
 <strong class="text-success">Longitude: 44.987654321</strong>
 Protocol: Princeton
 ...</pre>
-                </div>
               </div>
               <div class="mb-4">
                 <h6 class="fw-bold">
@@ -235,12 +241,6 @@ Protocol: Princeton
                     <a href="https://github.com/flipperdevices/flipperzero-firmware/issues/1547">flipperzero-firmware#1547</a>
                   </li>
                 </ol>
-              </div>
-              <div class="mb-4">
-                <div class="alert alert-success">
-                  <i class="fas fa-lock me-1" />
-                  Your files are always private and never sent to any server. <a href="https://github.com/Stichoza/flipper-map">View source on GitHub</a>.
-                </div>
               </div>
             </div>
           </div>
