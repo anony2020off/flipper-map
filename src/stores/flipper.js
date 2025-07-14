@@ -257,19 +257,6 @@ export const useFlipperStore = defineStore('flipper', () => {
     await new Promise(resolve => setTimeout(resolve, 500));
   }
 
-  const getFileColor = (type) => {
-    switch (type) {
-      case 'subghz':
-        return '#1aa179';
-      case 'nfc':
-        return '#3d8bfd';
-      case 'rfid':
-        return '#ffc107';
-      default:
-        return '#6c757d';
-    }
-  };
-
   const getFileIcon = (type) => {
     switch (type) {
       case 'subghz':
@@ -298,7 +285,6 @@ export const useFlipperStore = defineStore('flipper', () => {
     isProcessingDirectories,
     hardwareName,
     hardwareModel,
-    getFileColor,
     getFileIcon,
     connect,
     disconnect,

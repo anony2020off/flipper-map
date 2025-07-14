@@ -203,9 +203,7 @@ const clearMarkers = () => {
 };
 
 const createMarker = file => {
-  const color = flipper.getFileColor(file.type);
   const icon = flipper.getFileIcon(file.type);
-  
   const cleanContent = file.content.replace(/^(>|size:).*$/gmi, '').trim();
   const key = file.key.replace(/00\s/g, '');
   const frequency = file.content.match(/frequency:\s*(\d+)/i)?.[1];
@@ -232,7 +230,7 @@ const createMarker = file => {
     riseOnHover: true,
     icon: L.divIcon({
       className: 'custom-map-marker',
-      html: `<div style="background-color: ${color}"><i class="fas fa-${icon}"></i></div>`,
+      html: `<div class="bg-${file.type}"><i class="fas fa-${icon}"></i></div>`,
       iconSize: [28, 28],
       iconAnchor: [14, 14],
       popupAnchor: [0, -14],
@@ -240,7 +238,7 @@ const createMarker = file => {
   })
   .bindPopup(`<div class="custom-popup">
       <div class="d-flex align-items-center gap-2 mb-2 pb-2 border-bottom">
-        <div class="flex-shrink-0 rounded-circle d-flex justify-content-center align-items-center" style="background-color: ${color}; width: 24px; height: 24px">
+        <div class="flex-shrink-0 rounded-circle d-flex justify-content-center align-items-center bg-${file.type} size-24">
           <i class="fas fa-${icon} text-white"></i>
         </div>
         <h6 class="m-0 flex-grow-1 text-truncate">${file.name}</h6>
