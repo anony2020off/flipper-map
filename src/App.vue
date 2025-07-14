@@ -1,7 +1,7 @@
 <script setup>
 import { computed, onMounted, ref, watch } from 'vue';
-import Sidebar from './components/Sidebar.vue';
-import Map from './components/Map.vue';
+import TheSidebar from './components/TheSidebar.vue';
+import TheMap from './components/TheMap.vue';
 import { useLocationStore } from './stores/location.js';
 import { useFlipperStore } from './stores/flipper';
 import { notify } from '@/helpers/notification.js';
@@ -60,7 +60,7 @@ const handleSearch = (query) => {
   <div class="app-container">
     <div class="row g-0 h-100">
       <div class="col sidebar-col">
-        <Sidebar
+        <TheSidebar
           v-model:selected-pin="selectedPin"
           :pins="pins"
           :search-query="searchQuery"
@@ -69,7 +69,7 @@ const handleSearch = (query) => {
         />
       </div>
       <div class="col map-col">
-        <Map
+        <TheMap
           v-model:selected-pin="selectedPin"
           :pins="pins"
           @select-pin="selectPin"

@@ -8,7 +8,6 @@ import 'leaflet-easybutton';
 import 'leaflet.marker.slideto';
 import 'leaflet.markercluster';
 
-
 const props = defineProps({
   pins: {
     type: Array,
