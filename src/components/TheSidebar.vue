@@ -194,11 +194,9 @@ const handleSelectPin = (pin) => {
                   Flipper Map currently supports <i class="fas fa-wave-square color-subghz" /> Sub-GHz, <i class="fas fa-wifi color-nfc" /> NFC and <i class="fas fa-id-card-clip color-rfid" /> RFID files.
                 </p>
               </div>
-              
               <div class="mb-4">
                 <div class="alert alert-warning">
                   <i class="fas fa-exclamation-triangle me-1" />
-                  <span class="fw-medium">Important!</span>
                   Files must include <code>Latitude:</code> and <code>Longitude:</code> lines to appear on the map.
                 </div>
                 <ul>
@@ -216,9 +214,8 @@ Frequency: 433920000
 Preset: FuriHalSubGhzPresetOok270Async
 <strong class="text-success">Latitude: 41.123456789</strong>
 <strong class="text-success">Longitude: 44.987654321</strong>
-Protocol: Dickert_MAHS
-Bit: 36
-Key: 00 00 00 0C 12 AB CD EF</pre>
+Protocol: Princeton
+...</pre>
                 </div>
               </div>
               <div class="mb-4">
@@ -238,6 +235,12 @@ Key: 00 00 00 0C 12 AB CD EF</pre>
                     <a href="https://github.com/flipperdevices/flipperzero-firmware/issues/1547">flipperzero-firmware#1547</a>
                   </li>
                 </ol>
+              </div>
+              <div class="mb-4">
+                <div class="alert alert-success">
+                  <i class="fas fa-lock me-1" />
+                  Your files are always private and never sent to any server. <a href="https://github.com/Stichoza/flipper-map">View source on GitHub</a>.
+                </div>
               </div>
             </div>
           </div>
