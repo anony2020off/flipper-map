@@ -237,7 +237,7 @@ Protocol: Princeton
                     via GPIO. The coordinates will be stored automatically when Flipper captures a signal.
                     <br>
                     Related issues:
-                    <a href="https://github.com/DarkFlippers/unleashed-firmware/issues/844">unleashed#844</a>,
+                    <a href="https://github.com/DarkFlippers/unleashed-firmware/issues/844">unleashed-firmware#844</a>,
                     <a href="https://github.com/flipperdevices/flipperzero-firmware/issues/1547">flipperzero-firmware#1547</a>
                   </li>
                 </ol>
