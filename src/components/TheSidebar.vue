@@ -221,15 +221,22 @@ Bit: 36
 Key: 00 00 00 0C 12 AB CD EF</pre>
                 </div>
               </div>
-              
               <div class="mb-4">
                 <h6 class="fw-bold">
-                  <i class="fas fa-square-arrow-up-right me-2" />
+                  <i class="fas fa-rocket me-2" />
                   <span>Future Improvements</span>
                 </h6>
                 <ol>
-                  <li>Assigning or changing location of a pin directly on map using drag-and-drop. I hope I add this feature soon.</li>
-                  <li>Click the <span class="fw-medium">Open on Flipper</span> button to launch the file on your connected device.</li>
+                  <li>Assigning or changing location of a pin directly on map using drag-and-drop. I hope I add this feature soon. Feel free to <a href="https://github.com/Stichoza/flipper-map">contribute</a>.</li>
+                  <li>
+                    The main Sub-GHz app with support of external
+                    <a href="https://lab.flipper.net/apps/gps_nmea">GPS module</a>
+                    via GPIO. The coordinates will be stored automatically when Flipper captures a signal.
+                    <br>
+                    Related issues:
+                    <a href="https://github.com/DarkFlippers/unleashed-firmware/issues/844">unleashed#844</a>,
+                    <a href="https://github.com/flipperdevices/flipperzero-firmware/issues/1547">flipperzero-firmware#1547</a>
+                  </li>
                 </ol>
               </div>
             </div>
