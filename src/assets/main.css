@@ -139,6 +139,44 @@ body[data-bs-theme="dark"] .leaflet-popup .leaflet-popup-content-wrapper, body[d
     width: 100%;
 }
 
+.sidebar-col {
+    max-width: 320px;
+}
+
+.color-subghz {
+    color: #1aa179;
+}
+
+.color-nfc {
+    color: #3d8bfd;
+}
+
+.color-rfid {
+    color: #ffc107;
+}
+
+.bg-subghz {
+    background-color: #1aa179;
+}
+
+.bg-nfc {
+    background-color: #3d8bfd;
+}
+
+.bg-rfid {
+    background-color: #ffc107;
+}
+
+.size-36 {
+    width: 36px;
+    height: 36px;
+}
+
+.size-46 {
+    width: 46px;
+    height: 46px;
+}
+
 .custom-primary-bg {
     background-color: #ff8200;
 }

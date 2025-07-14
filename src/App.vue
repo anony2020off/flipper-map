@@ -59,11 +59,21 @@ const handleSearch = (query) => {
 <template>
   <div class="app-container">
     <div class="row g-0 h-100">
-      <div class="col sidebar-col" style="max-width: 320px;">
-        <Sidebar :pins="pins" @search="handleSearch" :searchQuery="searchQuery" @select-pin="selectPin" v-model:selectedPin="selectedPin"/>
+      <div class="col sidebar-col">
+        <Sidebar
+          v-model:selected-pin="selectedPin"
+          :pins="pins"
+          :search-query="searchQuery"
+          @search="handleSearch"
+          @select-pin="selectPin"
+        />
       </div>
       <div class="col map-col">
-        <Map :pins="pins" @select-pin="selectPin" v-model:selectedPin="selectedPin"/>
+        <Map
+          v-model:selected-pin="selectedPin"
+          :pins="pins"
+          @select-pin="selectPin"
+        />
       </div>
     </div>
   </div>

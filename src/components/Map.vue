@@ -306,5 +306,8 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div id="map" class="map-container w-100 h-100"></div>
+  <div
+    id="map"
+    class="map-container w-100 h-100"
+  />
 </template>
