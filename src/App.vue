@@ -29,7 +29,7 @@ watch(() => flipper.connectionError, (error) => {
 
 watch(() => flipper.isConnected, (isConnected) => {
   if (isConnected) {
-    notify(`Connected to ${flipper.hardwareModel ?? 'device'}: ${flipper.hardwareName ?? 'Unknown'}`, 'success');
+    notify('Connected to ' + (flipper.hardwareModel ?? 'device') + ': ' + (flipper.hardwareName ?? 'Unknown'), 'success');
   }
 });
 
