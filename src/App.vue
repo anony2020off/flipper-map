@@ -2,6 +2,7 @@
 import { computed, onMounted, ref, watch } from 'vue';
 import TheSidebar from '@/components/TheSidebar.vue';
 import TheMap from '@/components/TheMap.vue';
+import HelpModal from '@/components/HelpModal.vue';
 import { useLocationStore } from '@/stores/location.js';
 import { useFlipperStore } from '@/stores/flipper';
 import { notify } from '@/helpers/notification.js';
@@ -77,4 +78,5 @@ const handleSearch = (query) => {
       </div>
     </div>
   </div>
+  <HelpModal />
 </template>
