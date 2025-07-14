@@ -1,9 +1,9 @@
 <script setup>
 import { computed, onMounted, ref, watch } from 'vue';
-import TheSidebar from './components/TheSidebar.vue';
-import TheMap from './components/TheMap.vue';
-import { useLocationStore } from './stores/location.js';
-import { useFlipperStore } from './stores/flipper';
+import TheSidebar from '@/components/TheSidebar.vue';
+import TheMap from '@/components/TheMap.vue';
+import { useLocationStore } from '@/stores/location.js';
+import { useFlipperStore } from '@/stores/flipper';
 import { notify } from '@/helpers/notification.js';
 
 const location = useLocationStore();
