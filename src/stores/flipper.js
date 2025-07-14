@@ -151,11 +151,18 @@ export const useFlipperStore = defineStore('flipper', () => {
     } else if (isSyncing.value && isProcessingFiles.value) {
       currentFile.value.content += line + '\n';
 
-      if (line.toLowerCase().startsWith('latitude:')) {
+      if (
+        line.toLowerCase().startsWith('latitude:') || // Original version
+        line.toLowerCase().startsWith('latitute:') || // https://github.com/Next-Flip/Momentum-Firmware/pull/246#issuecomment-2395826614
+        line.toLowerCase().startsWith('lat:') // Momentum, RogueMaster
+      ) {
         currentFile.value.latitude = parseFloat(line.split(':').pop());
       }
 
-      if (line.toLowerCase().startsWith('longitude:')) {
+      if (
+        line.toLowerCase().startsWith('longitude:') || // Original version
+        line.toLowerCase().startsWith('lon:') // Momentum, RogueMaster
+      ) {
         currentFile.value.longitude = parseFloat(line.split(':').pop());
       }
 
