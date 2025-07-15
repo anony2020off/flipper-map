@@ -214,8 +214,8 @@ const createMarker = file => {
   const type = {subghz: 'Sub-GHz', nfc: 'NFC', rfid: 'RFID'}[file.type] ?? file.type;
   const isUnknown = file.name.startsWith('_') || file.name.startsWith('UNK '); // For my personal use case ¯\_(ツ)_/¯
   
-  let distanceText = '';
-  if (file.distance !== undefined && file.distance !== null) {
+  let distanceText = 'Unknown';
+  if (file.distance !== undefined && file.distance !== null && !isNaN(file.distance)) {
     if (file.distance < 1) {
       distanceText = `${Math.round(file.distance * 1000)}m`;
     } else if (file.distance < 10) {
