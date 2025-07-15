@@ -214,17 +214,6 @@ const createMarker = file => {
   const type = {subghz: 'Sub-GHz', nfc: 'NFC', rfid: 'RFID'}[file.type] ?? file.type;
   const isUnknown = file.name.startsWith('_') || file.name.startsWith('UNK '); // For my personal use case ¯\_(ツ)_/¯
   
-  let distanceText = 'Unknown';
-  if (file.distance !== undefined && file.distance !== null && !isNaN(file.distance)) {
-    if (file.distance < 1) {
-      distanceText = `${Math.round(file.distance * 1000)}m`;
-    } else if (file.distance < 10) {
-      distanceText = `${file.distance.toFixed(1)}km`;
-    } else {
-      distanceText = `${file.distance.toFixed(0)}km`;
-    }
-  }
-  
   return L.marker([file.latitude, file.longitude], {
     title: file.name,
     riseOnHover: true,
@@ -251,7 +240,7 @@ const createMarker = file => {
         ${uid ? `<div class="mb-1"><strong>UID:</strong> ${uid}</div>` : ''}
         ${keyType ? `<div class="mb-1"><strong>Key Type:</strong> ${keyType}</div>` : ''}
         ${keyType && data ? `<div class="mb-1"><strong>Data:</strong> ${data}</div>` : ''}
-        <div class="mb-1"><strong>Distance:</strong> ${distanceText}</div>
+        <div class="mb-1"><strong>Distance:</strong> ${file.distanceText}</div>
         <div class="mb-1"><strong>Path:</strong> ${file.path}</div>
       </div>
       <details>

@@ -41,8 +41,19 @@ const pins = computed(() => {
     const hasCoordinates = file.latitude !== undefined && file.longitude !== undefined && file.latitude !== null && file.longitude !== null;
     const distance = hasCoordinates ? location.calculateDistance(latitude, longitude, file.latitude, file.longitude) : null;
     const visible = file.name.toLowerCase().includes(searchQuery.value.toLowerCase());
+    
+    let distanceText = 'Unknown';
+    if (distance !== undefined && distance !== null && !isNaN(distance)) {
+      if (distance < 1) {
+        distanceText = `${Math.round(distance * 1000)}m`;
+      } else if (distance < 10) {
+        distanceText = `${distance.toFixed(1)}km`;
+      } else {
+        distanceText = `${distance.toFixed(0)}km`;
+      }
+    }
 
-    return {...file, distance, visible}
+    return {...file, distance, distanceText, visible}
   })
 
   return flipperPins.sort((a, b) => (a.distance || Infinity) - (b.distance || Infinity))
