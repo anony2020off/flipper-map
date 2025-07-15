@@ -161,7 +161,8 @@ export const useFlipperStore = defineStore('flipper', () => {
 
       if (
         line.toLowerCase().startsWith('longitude:') || // Original version
-        line.toLowerCase().startsWith('lon:') // Momentum, RogueMaster
+        line.toLowerCase().startsWith('lon:') || // Momentum, RogueMaster
+        line.toLowerCase().startsWith('lng:') // Just in case
       ) {
         currentFile.value.longitude = parseFloat(line.split(':').pop());
       }
