@@ -140,7 +140,7 @@ const handleSelectPin = (pin) => {
                 <div class="text-muted small d-flex align-items-center text-truncate">
                   <div v-if="pin.distance">
                     <i class="fas fa-location-dot me-1 small flex-shrink-0" />
-                    <span class="text-truncate">{{ pin.distance < 1 ? `${(pin.distance * 1000).toFixed(0)}m` : (pin.distance < 10 ? `${pin.distance.toFixed(1)}km` : `${pin.distance.toFixed(0)}km`) }} away</span>
+                    <span class="text-truncate">{{ pin.distanceText }} away</span>
                   </div>
                   <div v-else>
                     <i class="fas fa-location-pin-lock me-1 small flex-shrink-0" />
