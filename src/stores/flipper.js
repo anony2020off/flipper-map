@@ -42,7 +42,9 @@ export const useFlipperStore = defineStore('flipper', () => {
 
     try {
       isConnecting.value = true;
-      port.value = await navigator.serial.requestPort();
+      port.value = await navigator.serial.requestPort({
+        filters: [{ usbVendorId: 0x0483 }]
+      });
       await port.value.open({ baudRate: 230400 });
 
       // Create reader and writer
