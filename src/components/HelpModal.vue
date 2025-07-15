@@ -38,7 +38,7 @@
             <ul>
               <li><span class="fw-bold">Files must include <code>Lat</code> and <code>Lon</code> lines to appear on the map.</span></li>
               <li><a href="https://momentum-fw.dev/">Momentum</a> and <a href="https://github.com/RogueMaster/flipperzero-firmware-wPlugins">RogueMaster</a> firmware automatically add these lines using GPS module (via GPIO).</li>
-              <li>For the official firmware or <a href="https://flipperunleashed.com/">Unleashed</a>, it should be done manually.</li>
+              <li>For the official firmware or <a href="https://flipperunleashed.com/">Unleashed</a>, coordinates should be added manually.</li>
               <li>You can also add location data by editing files on your SD card or using the Flipper mobile app.</li>
               <li><code>Latitude</code> and <code>Longitude</code> lines are also supported as an alternative of <code>Lat</code> and <code>Lon</code>.</li>
               <li>Files without location data will still appear in the sidebar but won't be shown on the map.</li>
