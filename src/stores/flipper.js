@@ -156,7 +156,7 @@ export const useFlipperStore = defineStore('flipper', () => {
         line.toLowerCase().startsWith('latitute:') || // https://github.com/Next-Flip/Momentum-Firmware/pull/246#issuecomment-2395826614
         line.toLowerCase().startsWith('lat:') // Momentum, RogueMaster
       ) {
-        currentFile.value.latitude = parseFloat(line.split(':').pop());
+        currentFile.value.latitude = parseFloat(line.split(':').pop()) || null;
       }
 
       if (
@@ -164,7 +164,7 @@ export const useFlipperStore = defineStore('flipper', () => {
         line.toLowerCase().startsWith('lon:') || // Momentum, RogueMaster
         line.toLowerCase().startsWith('lng:') // Just in case
       ) {
-        currentFile.value.longitude = parseFloat(line.split(':').pop());
+        currentFile.value.longitude = parseFloat(line.split(':').pop()) || null;
       }
 
       if (line.toLowerCase().startsWith('key:')) {
