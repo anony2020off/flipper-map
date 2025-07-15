@@ -50,7 +50,7 @@ const handleSelectPin = (pin) => {
 </script>
 
 <template>
-  <div class="sidebar border-end">
+  <div class="sidebar border-end d-flex flex-column">
     <div class="sidebar-header">
       <div class="bg-primary text-white p-3 d-flex justify-content-between align-items-center">
         <div class="d-flex align-items-center gap-2">
@@ -87,77 +87,75 @@ const handleSelectPin = (pin) => {
       </div>
     </div>
     
-    <div class="sidebar-content overflow-auto h-100">
-      <div class="flex-grow-1 overflow-auto">
-        <div
-          v-if="pins.length === 0"
-          class="d-flex flex-column align-items-center justify-content-center py-5"
-        >
-          <div v-if="!flipper.isConnected">
-            <p class="text-muted small">
-              Connect Flipper to see files.
-            </p>
-            <div class="mt-5 text-center">
-              <a
-                href="#"
-                class="btn btn-sm btn-link text-decoration-none"
-                data-bs-toggle="modal"
-                data-bs-target="#helpModal"
-              >
-                <i class="fas fa-question-circle" /> Help
-              </a>
-            </div>
-          </div>
-          <p v-else-if="flipper.isSyncing">
-            <span class="text-muted small">Syncing...</span>
+    <div class="sidebar-content flex-grow-1 overflow-auto">
+      <div
+        v-if="pins.length === 0"
+        class="d-flex flex-column align-items-center justify-content-center py-5"
+      >
+        <div v-if="!flipper.isConnected">
+          <p class="text-muted small">
+            Connect Flipper to see files.
           </p>
-          <p v-else>
-            <span class="text-muted small">No files found.</span>
-          </p>
-        </div>
-      
-        <div v-else>
-          <div class="list-group list-group-flush">
+          <div class="mt-5 text-center">
             <a
-              v-for="pin in pins"
-              :key="pin.hash"
               href="#"
-              class="list-group-item list-group-item-action px-3 py-3 overflow-hidden"
-              :class="{'bg-body-secondary': selectedPin && selectedPin.hash === pin.hash, 'd-none': !pin.visible}"
-              @click.prevent="handleSelectPin(pin)"
+              class="btn btn-sm btn-link text-decoration-none"
+              data-bs-toggle="modal"
+              data-bs-target="#helpModal"
             >
-              <div class="d-flex align-items-center">
-                <div
-                  class="d-flex align-items-center justify-content-center rounded-circle shadow-sm flex-shrink-0 size-46"
-                  :class="'bg-' + pin.type"
-                >
-                  <i :class="['fas', `fa-${flipper.getFileIcon(pin.type)}`, 'text-white']" />
-                </div>
-                <div
-                  class="flex-grow-1 min-width-0 mx-3 overflow-hidden"
-                  :class="pin.distance ? '' : 'opacity-75'"
-                >
-                  <span class="d-block fw-medium small text-truncate">{{ pin.name }}</span>
-                  <div class="text-muted small d-flex align-items-center text-truncate">
-                    <div v-if="pin.distance">
-                      <i class="fas fa-location-dot me-1 small flex-shrink-0" />
-                      <span class="text-truncate">{{ pin.distance < 1 ? `${(pin.distance * 1000).toFixed(0)}m` : (pin.distance < 10 ? `${pin.distance.toFixed(1)}km` : `${pin.distance.toFixed(0)}km`) }} away</span>
-                    </div>
-                    <div v-else>
-                      <i class="fas fa-location-pin-lock me-1 small flex-shrink-0" />
-                      <span class="text-truncate">No location</span>
-                    </div>
-                  </div>
-                </div>
-                <div class="flex-shrink-0">
-                  <i
-                    v-if="pin.distance"
-                    class="fas fa-chevron-right text-muted"
-                  />
-                </div>
-              </div>
+              <i class="fas fa-question-circle" /> Help
             </a>
           </div>
+        </div>
+        <p v-else-if="flipper.isSyncing">
+          <span class="text-muted small">Syncing...</span>
+        </p>
+        <p v-else>
+          <span class="text-muted small">No files found.</span>
+        </p>
+      </div>
+    
+      <div v-else>
+        <div class="list-group list-group-flush">
+          <a
+            v-for="pin in pins"
+            :key="pin.hash"
+            href="#"
+            class="list-group-item list-group-item-action px-3 py-3 overflow-hidden"
+            :class="{'bg-body-secondary': selectedPin && selectedPin.hash === pin.hash, 'd-none': !pin.visible}"
+            @click.prevent="handleSelectPin(pin)"
+          >
+            <div class="d-flex align-items-center">
+              <div
+                class="d-flex align-items-center justify-content-center rounded-circle shadow-sm flex-shrink-0 size-46"
+                :class="'bg-' + pin.type"
+              >
+                <i :class="['fas', `fa-${flipper.getFileIcon(pin.type)}`, 'text-white']" />
+              </div>
+              <div
+                class="flex-grow-1 min-width-0 mx-3 overflow-hidden"
+                :class="pin.distance ? '' : 'opacity-75'"
+              >
+                <span class="d-block fw-medium small text-truncate">{{ pin.name }}</span>
+                <div class="text-muted small d-flex align-items-center text-truncate">
+                  <div v-if="pin.distance">
+                    <i class="fas fa-location-dot me-1 small flex-shrink-0" />
+                    <span class="text-truncate">{{ pin.distance < 1 ? `${(pin.distance * 1000).toFixed(0)}m` : (pin.distance < 10 ? `${pin.distance.toFixed(1)}km` : `${pin.distance.toFixed(0)}km`) }} away</span>
+                  </div>
+                  <div v-else>
+                    <i class="fas fa-location-pin-lock me-1 small flex-shrink-0" />
+                    <span class="text-truncate">No location</span>
+                  </div>
+                </div>
+              </div>
+              <div class="flex-shrink-0">
+                <i
+                  v-if="pin.distance"
+                  class="fas fa-chevron-right text-muted"
+                />
+              </div>
+            </div>
+          </a>
         </div>
       </div>
     </div>
