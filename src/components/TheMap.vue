@@ -240,7 +240,7 @@ const createMarker = file => {
         ${uid ? `<div class="mb-1"><strong>UID:</strong> ${uid}</div>` : ''}
         ${keyType ? `<div class="mb-1"><strong>Key Type:</strong> ${keyType}</div>` : ''}
         ${keyType && data ? `<div class="mb-1"><strong>Data:</strong> ${data}</div>` : ''}
-        <div class="mb-1"><strong>Distance:</strong> ${file.distanceText}</div>
+        <div class="mb-1"><strong>Distance:</strong> <span class="popup-distance-text">${file.distanceText}</span></div>
         <div class="mb-1"><strong>Path:</strong> ${file.path}</div>
       </div>
       <details>
@@ -254,7 +254,16 @@ const createMarker = file => {
       </div>
     </div>`, {
     closeButton: false,
-    autoPanPadding: [60, 20]
+    autoPanPadding: [60, 20],
+    customHash: file.hash // Used for dynamically updating distance in popup content
+  }).on('popupopen', (e) => {
+    const popup = e.popup;
+    const file = props.pins.find(file => file.hash === popup.options.customHash);
+
+    if (file) {
+      const distanceText = file.distanceText;
+      popup.getElement().querySelector('.popup-distance-text').textContent = distanceText;
+    }
   })
 }
 
