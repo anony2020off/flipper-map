@@ -5,7 +5,8 @@ Connect your Flipper Zero to your computer using USB and visualize signal record
 **[↗ flipper-map.stichoza.com](https://flipper-map.stichoza.com)**
 
 ![Flipper Zero Map](./public/flipper-zero-cover.png)
-
+![Flipper Zero Update](./public/feature1.png)
+![Flipper Zero Update](./public/feature2.png)
 
 Flipper files should include `Lat:` and `Lon:` lines. Custom firmwares like Momentum and RogueMaster automatically add these lines using GPS module (via GPIO). For the official firmware or Unleashed, it should be done manually I hope some day they'll implement same features. You can add location info using Flipper mobile app or directly edit them on SD card.
 
