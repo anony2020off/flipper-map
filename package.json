@@ -11,6 +11,7 @@
   "dependencies": {
     "bootstrap": "^5.3.7",
     "crypto-js": "^4.2.0",
+    "idb": "^8.0.3",
     "leaflet": "^1.9.4",
     "leaflet-easybutton": "^2.4.0",
     "leaflet.marker.slideto": "^0.3.0",

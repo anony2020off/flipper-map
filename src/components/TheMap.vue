@@ -232,6 +232,9 @@ const createMarker = file => {
         </div>
         <h6 class="m-0 flex-grow-1 text-truncate">${file.name}</h6>
       </div>
+
+      ${file.image ? `<div class="mb-2"><img src="${file.image}" alt="Signal Image" class="img-fluid rounded shadow-sm" style="max-height: 180px; max-width: 100%;" /></div>` : ''}
+
       <div>
         <div class="mb-1"><strong>Type:</strong> ${type}</div>
         ${frequency ? `<div class="mb-1"><strong>Frequency:</strong> ${frequency/1000000} MHz</div>` : ''}
@@ -243,14 +246,17 @@ const createMarker = file => {
         <div class="mb-1"><strong>Distance:</strong> <span class="popup-distance-text">${file.distanceText}</span></div>
         <div class="mb-1"><strong>Path:</strong> ${file.path}</div>
       </div>
+
       <details>
         <summary><strong>File content</strong></summary>
         <pre class="mt-2 card p-2 bg-body-secondary" style="max-height: 210px">${cleanContent}</pre>
       </details>
+
       <div class="mt-2">
         <button class="btn btn-sm btn-secondary w-100 d-flex align-items-center" onclick="jsLaunchFile('${file.hash}')" title="Flipper must be unlocked and apps should not be running">
           <span class="flex-grow-1 ps-3">Open on Flipper</span>
-          <i class="fas fa-square-arrow-up-right pull-right"></i></button>
+          <i class="fas fa-square-arrow-up-right pull-right"></i>
+        </button>
       </div>
     </div>`, {
     closeButton: false,

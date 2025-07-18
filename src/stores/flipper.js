@@ -26,10 +26,12 @@ export const useFlipperStore = defineStore('flipper', () => {
     latitude: 0,
     longitude: 0,
     key: '',
+    image: null, // 👈 NEW
   });
 
   const directories = [
-    '/ext/subghz',
+    '/ext/subghz/Remotes',
+    '/ext/subghz/Autosave',
     '/ext/nfc',
     '/ext/lfrfid',
   ];
@@ -141,8 +143,7 @@ export const useFlipperStore = defineStore('flipper', () => {
 
   const processLine = (line) => {
     if (isSyncing.value && isProcessingDirectories.value) {
-      const matches = line.match(/\[\F\]\s+(\/ext\/(subghz|nfc|lfrfid)\/[A-Za-z0-9_\-\s\./\(\)]+\.(sub|nfc|rfid))\s\d+b/m)
-
+      const matches = line.match(/\[F\]\s+(\/ext\/(subghz\/Autosave|subghz|nfc|lfrfid)\/.+?\.(sub|nfc|rfid))\s\d+b/);
       if (matches && matches[1]) {
         const filePath = matches[1];
         if (filePath && !filePath.includes('/.') && !filePath.includes('/assets/')) {

@@ -27,7 +27,7 @@
               <i class="fas fa-lock me-1" />
               Your files are never sent to any server and always remain private.
               <a
-                href="https://github.com/Stichoza/flipper-map"
+                href="https://github.com/anony2020off/flipper-map"
                 class="link-success"
               >View source on GitHub</a>.
             </div>
